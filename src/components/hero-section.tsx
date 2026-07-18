@@ -141,8 +141,8 @@ export function HeroSection() {
 
 function PromoCard({ image, to }: { image: string; to: string }) {
   return (
-    <Link
-      to={to as "/collection"}
+    <a
+      href={to}
       className="group relative block overflow-hidden rounded-2xl aspect-[16/9] lg:aspect-[4/3]"
     >
       <img
@@ -151,6 +151,6 @@ function PromoCard({ image, to }: { image: string; to: string }) {
         loading="lazy"
         className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
       />
-    </Link>
+    </a>
   );
 }
