@@ -17,7 +17,7 @@ function Index() {
       <HeroSection />
       <TrustStrip />
       <FeaturedCategories />
-      <ProductRail title="Featured" accent="Products" products={featured} viewAllTo={undefined} />
+      <ProductRail title="Featured" accent="Products" products={featured} />
       <ProductRail title="Latest" accent="Airbuds" products={byCategory("airbuds")} viewAllTo="airbuds" />
       <ExperienceBand />
       <ProductRail title="Trendy" accent="Watches" products={byCategory("watch")} viewAllTo="watch" />
