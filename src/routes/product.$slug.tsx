@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { bySlug, byCategory } from "@/data/products";
 import { formatBDT, useCart } from "@/stores/cart";
-import { categoryMap } from "@/data/categories";
+import { categoryMap, type CategorySlug } from "@/data/categories";
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
 import { useState } from "react";
@@ -39,8 +39,9 @@ function ProductPage() {
   const { product } = Route.useLoaderData();
   const add = useCart((s) => s.add);
   const [qty, setQty] = useState(1);
-  const cat = categoryMap[product.category];
-  const related = byCategory(product.category).filter((p) => p.id !== product.id).slice(0, 5);
+  const catSlug = product.category as CategorySlug;
+  const cat = categoryMap[catSlug];
+  const related = byCategory(catSlug).filter((p) => p.id !== product.id).slice(0, 5);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -83,7 +84,7 @@ function ProductPage() {
 
           {product.specs && (
             <dl className="mt-5 grid grid-cols-2 gap-y-2 rounded-xl border p-4 text-sm">
-              {Object.entries(product.specs).map(([k, v]) => (
+              {Object.entries(product.specs as Record<string, string>).map(([k, v]) => (
                 <div key={k} className="contents">
                   <dt className="text-muted-foreground">{k}</dt>
                   <dd className="font-medium">{v}</dd>
