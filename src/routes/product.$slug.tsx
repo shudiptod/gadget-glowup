@@ -285,7 +285,7 @@ function ProductPage() {
                       <td className="px-4 py-3">{cat.name}</td>
                     </tr>
                     {product.specs &&
-                      Object.entries(product.specs).map(([k, v], i) => (
+                      Object.entries(product.specs as Record<string, string>).map(([k, v], i) => (
                         <tr key={k} className={i % 2 === 0 ? "border-b bg-muted/40" : "border-b"}>
                           <th className="px-4 py-3 text-left font-semibold">{k}</th>
                           <td className="px-4 py-3">{v}</td>
