@@ -1,0 +1,76 @@
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import type { IProduct } from "@/types/api";
+
+export type CartItem = {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  image: string;
+  qty: number;
+};
+
+type CartState = {
+  items: CartItem[];
+  add: (p: IProduct, qty?: number) => void;
+  remove: (id: string) => void;
+  setQty: (id: string, qty: number) => void;
+  clear: () => void;
+};
+
+export const useCart = create<CartState>()(
+  persist(
+    (set) => ({
+      items: [],
+      add: (p, qty = 1) =>
+        set((s) => {
+          const existing = s.items.find((i) => i.id === p.id);
+          if (existing) {
+            return {
+              items: s.items.map((i) => (i.id === p.id ? { ...i, qty: i.qty + qty } : i)),
+            };
+          }
+          return {
+            items: [
+              ...s.items,
+              {
+                id: p.id,
+                slug: String(p.slug ?? p.id),
+                name: String(p.productTitle),
+                price: Number(p.price ?? 0),
+                image: typeof p.thumbnail === "string" ? p.thumbnail : "",
+                qty,
+              },
+            ],
+          };
+        }),
+      remove: (id) => set((s) => ({ items: s.items.filter((i) => i.id !== id) })),
+      setQty: (id, qty) =>
+        set((s) => ({
+          items: s.items
+            .map((i) => (i.id === id ? { ...i, qty: Math.max(1, qty) } : i))
+            .filter((i) => i.qty > 0),
+        })),
+      clear: () => set({ items: [] }),
+    }),
+    {
+      name: "gajitto-cart",
+      storage: createJSONStorage(() =>
+        typeof window === "undefined"
+          ? {
+            getItem: () => null,
+            setItem: () => { },
+            removeItem: () => { },
+          }
+          : localStorage,
+      ),
+    },
+  ),
+);
+
+export const cartCount = (items: CartItem[]) => items.reduce((n, i) => n + i.qty, 0);
+
+export const cartSubtotal = (items: CartItem[]) => items.reduce((n, i) => n + i.qty * i.price, 0);
+
+export const formatBDT = (n: number) => `৳ ${n}`;
