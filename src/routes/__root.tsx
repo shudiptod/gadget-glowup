@@ -84,14 +84,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Shop the latest smartphones, airbuds, smartwatches, headphones and accessories at Gajitto — Bangladesh's home for everyday tech with fastest delivery and after-sales service.",
       },
       { name: "author", content: "Gajitto" },
-      { property: "og:title", content: "Gajitto — Everyday Tech, Everyday Delivered" },
+      { property: "og:title", content: "Gajitto — Smartphones, Airbuds, Watches & More in Bangladesh" },
       {
         property: "og:description",
         content:
-          "Smartphones, airbuds, smartwatches and accessories from trusted brands. 0% EMI, fastest home delivery, after-sales service.",
+          "Shop the latest smartphones, airbuds, smartwatches, headphones and accessories at Gajitto — Bangladesh's home for everyday tech with fastest delivery and after-sales service.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Gajitto — Smartphones, Airbuds, Watches & More in Bangladesh" },
+      { name: "twitter:description", content: "Shop the latest smartphones, airbuds, smartwatches, headphones and accessories at Gajitto — Bangladesh's home for everyday tech with fastest delivery and after-sales service." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8393ea84-90b7-4f0a-801f-a9eb3f9a56dc/id-preview-2c109ec1--eea6c0e5-81d8-44d9-be7f-125055ff901c.lovable.app-1784394857133.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8393ea84-90b7-4f0a-801f-a9eb3f9a56dc/id-preview-2c109ec1--eea6c0e5-81d8-44d9-be7f-125055ff901c.lovable.app-1784394857133.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
