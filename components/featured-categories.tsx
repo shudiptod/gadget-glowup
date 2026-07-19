@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SectionHeading } from "./section-heading";
 import apiClient from "@/lib/apiClient";
 import type { ICollectionListResponse } from "@/types/api";
+import Image from "next/image";
 
 type FeaturedCategory = {
   slug?: string;
@@ -29,16 +30,17 @@ export async function FeaturedCategories() {
           <Link
             key={c.slug}
             href={`/collection/${c.slug}`}
-            className="group flex flex-col items-center gap-2"
+            className="group flex flex-col items-center gap-2 w-31"
           >
-            <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl border bg-card p-3 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
-              <img
+            <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border bg-card p-3 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md h-31 relative">
+              <Image
+                fill
+                priority
                 src={
                   c.imagePath ||
                   "https://wwsygxbdccehktouuodc.supabase.co/storage/v1/object/public/store-assets/products/images/Redmi%20Note%2015%204G.png"
                 }
-                alt={c.name}
-                loading="lazy"
+                alt={c.name || "Category"}
                 className="h-full w-full object-contain"
               />
             </div>

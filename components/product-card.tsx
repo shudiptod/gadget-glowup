@@ -5,6 +5,8 @@ import { formatBDT, useCart } from "@/stores/cart";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import type { IProduct } from "@/types/api";
+import Image from "next/image";
+import { getOptimizedSupabaseUrl } from "@/lib/utils";
 
 function getProductPrice(product: IProduct) {
   const price = Number(product.price ?? 0);
@@ -15,9 +17,10 @@ export function ProductCard({ product }: { product: IProduct }) {
   const add = useCart((s) => s.add);
   const price = getProductPrice(product);
   const salePrice = Number(product.salePrice ?? 0);
-  const title = String(product.productTitle ?? product.title ?? product.name ?? "Untitled product");
-  const image = String(product.thumbnail ?? product.image ?? "");
-  const category = String(product.categoryName ?? product.category ?? "");
+  const title = String(product.productTitle);
+  const image = String(product.thumbnail);
+  const optimizedUrl = getOptimizedSupabaseUrl(image);
+  const category = String(product.categoryName);
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl border bg-card transition hover:-translate-y-0.5 hover:shadow-md">
@@ -25,13 +28,15 @@ export function ProductCard({ product }: { product: IProduct }) {
         href={`/product/${product.slug}`}
         className="relative block aspect-square overflow-hidden bg-muted"
       >
-        <img
+        <Image
+          fill
+          unoptimized
           src={
-            image ||
+            optimizedUrl ||
             "https://wwsygxbdccehktouuodc.supabase.co/storage/v1/object/public/store-assets/products/images/Redmi%20Note%2015%204G.png"
           }
           alt={title}
-          loading="lazy"
+          priority
           className="h-full w-full object-contain p-4 transition duration-500 group-hover:scale-105"
         />
         {salePrice > 0 && salePrice < price && (

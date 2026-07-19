@@ -25,11 +25,24 @@ async function getFeaturedProducts(limit: number) {
   }
 }
 
+async function getCategorizedProducts(limit: number, categorySlug: string) {
+  try {
+    return await apiClient.get<{ data: IProduct[] }>(
+      `/products?limit=${limit}&category=${categorySlug}`,
+    );
+  } catch {
+    throw new Error("Failed to fetch products");
+  }
+}
+
 export default async function HomePage() {
   const settings = await getHomeSettings();
   const siteName = typeof settings?.data?.appName === "string" ? settings.data.appName : "DHON";
 
   const { data: featuredProducts } = await getFeaturedProducts(5);
+  const { data: airbudsProducts } = await getCategorizedProducts(5, "airbuds");
+  const { data: watchesProducts } = await getCategorizedProducts(5, "watch");
+  const { data: wiredEarphonesProducts } = await getCategorizedProducts(5, "wired-earphones");
 
   return (
     <>
@@ -37,25 +50,15 @@ export default async function HomePage() {
       <TrustStrip />
       <FeaturedCategories />
       <ProductRail title="Featured" accent="Products" products={featuredProducts} viewAllTo="" />
-      {/* <ProductRail
-        title="Latest"
-        accent="Airbuds"
-        products={byCategory("airbuds")}
-        viewAllTo="airbuds"
-      /> */}
+      <ProductRail title="Latest" accent="Airbuds" products={airbudsProducts} viewAllTo="airbuds" />
       <ExperienceBand />
-      {/* <ProductRail
-        title="Trendy"
-        accent="Watches"
-        products={byCategory("watch")}
-        viewAllTo="watch"
-      />
+      <ProductRail title="Trendy" accent="Watches" products={watchesProducts} viewAllTo="watch" />
       <ProductRail
         title="Wired"
         accent="Earphones"
-        products={byCategory("wired-earphones")}
+        products={wiredEarphonesProducts}
         viewAllTo="wired-earphones"
-      /> */}
+      />
       <BrandStrip />
     </>
   );

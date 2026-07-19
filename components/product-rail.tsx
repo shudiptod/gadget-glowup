@@ -33,7 +33,7 @@ export function ProductRail({
       />
       <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
         {products.slice(0, 5).map((p) => (
-          <ProductCard key={p.id} product={p} />
+          <ProductCard key={p.variantId} product={p} />
         ))}
       </div>
     </section>
