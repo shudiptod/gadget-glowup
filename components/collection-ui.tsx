@@ -114,8 +114,8 @@ export default function CollectionUI({
       <h1 className="font-display text-3xl font-extrabold">All Products</h1>
       <p className="mt-1 text-sm text-muted-foreground">{totalProducts} products</p>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[240px_1fr] items-start">
-        <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[240px_1fr] items-start relative">
+        <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start sticky max-h-[calc(100vh-281px)] overflow-y-auto">
           {/* Category Filter */}
           <div className="rounded-xl border p-4">
             <h3 className="text-sm font-semibold">Category</h3>
@@ -147,7 +147,7 @@ export default function CollectionUI({
               onChange={(e) => setLocalMaxPrice(Number(e.target.value))}
               onMouseUp={handlePriceCommit}
               onTouchEnd={handlePriceCommit}
-              className="mt-3 w-full accent-[color:var(--accent)]"
+              className="mt-3 w-full accent-accent"
             />
             <p className="mt-2 text-sm text-muted-foreground">
               Up to ৳{localMaxPrice.toLocaleString()}

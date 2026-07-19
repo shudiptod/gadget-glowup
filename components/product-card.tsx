@@ -37,7 +37,7 @@ export function ProductCard({ product }: { product: IProduct }) {
           }
           alt={title}
           priority
-          className="h-full w-full object-contain p-4 transition duration-500 group-hover:scale-105"
+          className="h-full w-full object-cover p-4 transition duration-500 group-hover:scale-105"
         />
         {salePrice > 0 && salePrice < price && (
           <span className="absolute left-2 top-2 rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-accent-foreground">
