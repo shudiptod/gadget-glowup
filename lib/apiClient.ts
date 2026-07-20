@@ -3,10 +3,9 @@ type ApiRequestConfig = Omit<RequestInit, "method" | "body"> & {
   params?: Record<string, unknown>;
 };
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ??
-  process.env.API_BASE_URL ??
-  (typeof window === "undefined" ? "http://127.0.0.1:3000" : "");
+const API_BASE_URL = (process.env.NODE_ENV === "production" ?
+  process.env.NEXT_PUBLIC_API_URL : "http://localhost:5001/api") ||
+  (typeof window === "undefined" ? "http://localhost:5001" : "");
 
 function buildUrl(url: string, params?: Record<string, unknown>) {
   const normalizedUrl = url.startsWith("http")
@@ -38,6 +37,7 @@ async function request<T>(url: string, init: ApiRequestConfig & { method: string
     ...rest,
     method: init.method,
     credentials: "include",
+    cache: "no-store",
     headers: {
       Accept: "application/json",
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
