@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import type { IProduct } from "@/types/api";
 import Image from "next/image";
 import { getOptimizedSupabaseUrl } from "@/lib/utils";
+import { useCartAction } from "@/hooks/useCartAction";
 
 function getProductPrice(product: IProduct) {
   const price = Number(product.price ?? 0);
@@ -21,6 +22,13 @@ export function ProductCard({ product }: { product: IProduct }) {
   const image = String(product.thumbnail);
   const optimizedUrl = getOptimizedSupabaseUrl(image);
   const category = String(product.categoryName);
+
+  const { handleAddToCart, isPending, isAddDisabled, isSuccess, isError } = useCartAction({
+    productId: product.id,
+    variantId: product.variantId,
+    maxStock: product.stock,
+    isProductInStock: product.stock > 0,
+  });
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl border bg-card transition hover:-translate-y-0.5 hover:shadow-md">
@@ -51,7 +59,7 @@ export function ProductCard({ product }: { product: IProduct }) {
         </span>
         <Link
           href={`/product/${product.slug ?? product.id}`}
-          className="line-clamp-2 min-h-10 text-sm font-medium hover:text-accent"
+          className="line-clamp-2 min-h-10 text-sm font-medium text-foreground hover:text-accent"
         >
           {title}
         </Link>
@@ -63,11 +71,11 @@ export function ProductCard({ product }: { product: IProduct }) {
             <span className="text-base font-bold text-price">{formatBDT(price)}</span>
           </div>
           <button
+            disabled={isAddDisabled || isPending}
             onClick={() => {
-              add(product);
-              toast.success("Added to cart", { description: title });
+              handleAddToCart();
             }}
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground opacity-90 hover:opacity-100"
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground opacity-90 hover:opacity-100 hover:bg-accent cursor-pointer"
             aria-label="Add to cart"
           >
             <ShoppingCart className="h-3.5 w-3.5" /> Add

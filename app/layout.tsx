@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { CategoryNav } from "@/components/category-nav";
 import { SiteFooter } from "@/components/site-footer";
 import { Toaster } from "@/components/ui/sonner";
+import Providers from "@/components/providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-display" });
@@ -22,13 +23,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${manrope.variable}`}>
       <body>
-        <div className="flex min-h-screen flex-col bg-background text-foreground">
-          <SiteHeader />
-          <CategoryNav />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
-        </div>
-        <Toaster position="top-right" richColors />
+        <Providers>
+          <div className="flex min-h-screen flex-col bg-background text-foreground">
+            <SiteHeader />
+            <CategoryNav />
+            <main className="flex-1">{children}</main>
+            <SiteFooter />
+          </div>
+          <Toaster position="top-right" richColors />
+        </Providers>
       </body>
     </html>
   );
