@@ -15,6 +15,7 @@ async function getCart() {
 
 export async function SiteHeader() {
   const { totalQuantity } = await getCart();
+  console.log(totalQuantity);
 
   return (
     <header className="sticky top-0 z-40 bg-surface text-surface-foreground border-b border-white/5">

@@ -5,6 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const formatBDT = (n: number) => `৳ ${n}`;
+
 export type SupabaseImageOptions = {
   /** The width of the image in pixels. */
   width?: number;

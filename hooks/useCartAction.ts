@@ -20,7 +20,11 @@ export function useCartAction({ productId, variantId, maxStock, isProductInStock
     const decreaseQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
     const handleAddToCart = () => {
-        if (!isProductInStock || quantity > maxStock) return toast.error("Stock unavailable.");
+
+        if (isProductInStock === false || quantity > maxStock) {
+            toast.error("Stock unavailable.");
+            return;
+        };
 
         addToCart(
             { productId, variantId, quantity },

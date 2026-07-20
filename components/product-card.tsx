@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { formatBDT, useCart } from "@/stores/cart";
 import { ShoppingCart } from "lucide-react";
-import { toast } from "sonner";
 import type { IProduct } from "@/types/api";
 import Image from "next/image";
 import { getOptimizedSupabaseUrl } from "@/lib/utils";
 import { useCartAction } from "@/hooks/useCartAction";
+import { formatBDT } from "@/lib/utils";
 
 function getProductPrice(product: IProduct) {
   const price = Number(product.price ?? 0);
@@ -15,16 +14,14 @@ function getProductPrice(product: IProduct) {
 }
 
 export function ProductCard({ product }: { product: IProduct }) {
-  const add = useCart((s) => s.add);
   const price = getProductPrice(product);
   const salePrice = Number(product.salePrice ?? 0);
   const title = String(product.productTitle);
   const image = String(product.thumbnail);
   const optimizedUrl = getOptimizedSupabaseUrl(image);
   const category = String(product.categoryName);
-
   const { handleAddToCart, isPending, isAddDisabled, isSuccess, isError } = useCartAction({
-    productId: product.id,
+    productId: product.productId,
     variantId: product.variantId,
     maxStock: product.stock,
     isProductInStock: product.stock > 0,
@@ -32,6 +29,13 @@ export function ProductCard({ product }: { product: IProduct }) {
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-xl border bg-card transition hover:-translate-y-0.5 hover:shadow-md">
+      {product.stock === 0 && (
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
+          <div className=" bg-accent px-4 py-2 text-sm font-bold uppercase tracking-wider text-background shadow-sm  w-full text-center">
+            Out of stock
+          </div>
+        </div>
+      )}
       <Link
         href={`/product/${product.slug}`}
         className="relative block aspect-square overflow-hidden bg-muted"
@@ -58,7 +62,7 @@ export function ProductCard({ product }: { product: IProduct }) {
           {category}
         </span>
         <Link
-          href={`/product/${product.slug ?? product.id}`}
+          href={`/product/${product.slug ?? product.productId}`}
           className="line-clamp-2 min-h-10 text-sm font-medium text-foreground hover:text-accent"
         >
           {title}
@@ -75,7 +79,7 @@ export function ProductCard({ product }: { product: IProduct }) {
             onClick={() => {
               handleAddToCart();
             }}
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground opacity-90 hover:opacity-100 hover:bg-accent cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground opacity-90 hover:opacity-100 hover:bg-accent cursor-pointer disabled:opacity-15 disabled:cursor-not-allowed disabled:hover:bg-primary disabled:hover:text-primary-foreground"
             aria-label="Add to cart"
           >
             <ShoppingCart className="h-3.5 w-3.5" /> Add

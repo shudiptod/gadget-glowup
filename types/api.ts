@@ -8,7 +8,7 @@ export interface ICollection {
 }
 
 export interface IProduct {
-    id: string;              // Product ID (Parent)
+    productId: string;              // Product ID (Parent)
     variantId: string;       // Variant ID (Unique for this item)
     productTitle: string;           // Parent Title (e.g. "iPhone 15")
     variantTitle: string | null; // Variant Title (e.g. "Black")

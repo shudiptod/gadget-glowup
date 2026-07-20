@@ -2,7 +2,7 @@
 
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
-import { formatBDT, useCart } from "@/stores/cart";
+import { formatBDT } from "@/lib/utils";
 import {
   CheckCircle,
   GitCompareArrows,
@@ -30,7 +30,7 @@ interface ProductClientProps {
 
 export default function ProductClient({ product, cat, related }: ProductClientProps) {
   const router = useRouter();
-  const add = useCart((s) => s.add);
+  // const add = useCart((s) => s.add);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"spec" | "desc" | "warranty">("spec");
   const [activeImg, setActiveImg] = useState(0);
@@ -42,12 +42,12 @@ export default function ProductClient({ product, cat, related }: ProductClientPr
     .slice(-6)}`;
 
   const handleAdd = () => {
-    add(product, qty);
+    // add(product, qty);
     toast.success("Added to cart", { description: `${qty} × ${product.name}` });
   };
 
   const handleBuyNow = () => {
-    add(product, qty);
+    // add(product, qty);
     router.push("/checkout");
   };
 
