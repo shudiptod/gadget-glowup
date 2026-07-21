@@ -1,29 +1,12 @@
+"use client";
 import Link from "next/link";
 import { ShoppingCart, User, Menu } from "lucide-react";
 import { GajittoLogo } from "./gajitto-logo";
-import apiClient from "@/lib/apiClient";
-import { ICartResponse } from "@/hooks/useCart";
 import ClientSearchBox from "./client-search-box";
-import { cookies } from "next/headers";
+import { useCart } from "@/providers/cart-context";
 
-async function getCart(guestCookie: string) {
-  try {
-    return await apiClient.get<ICartResponse>("/cart", {
-      headers: {
-        Cookie: guestCookie ? `cart_guest_id=${guestCookie}` : "",
-      },
-      cache: "no-store", // Prevent Next.js from caching this!
-    });
-  } catch {
-    return { totalQuantity: 0 };
-  }
-}
-
-export async function SiteHeader() {
-  const cookieStore = await cookies();
-  const guestCookie = cookieStore.get("cart_guest_id")?.value;
-
-  const { totalQuantity } = await getCart(guestCookie ?? "");
+export function SiteHeader() {
+  const { totalQuantity } = useCart();
 
   return (
     <header className="sticky top-0 z-40 bg-surface text-surface-foreground border-b border-white/5">

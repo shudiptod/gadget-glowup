@@ -5,7 +5,8 @@ import { SiteHeader } from "@/components/site-header";
 import { CategoryNav } from "@/components/category-nav";
 import { SiteFooter } from "@/components/site-footer";
 import { Toaster } from "@/components/ui/sonner";
-import Providers from "@/components/providers";
+import ReactQueryProvider from "@/providers/react-query-provider";
+import { CartProvider } from "@/providers/cart-context";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-display" });
@@ -23,15 +24,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${manrope.variable}`}>
       <body>
-        <Providers>
-          <div className="flex min-h-screen flex-col bg-background text-foreground">
-            <SiteHeader />
-            <CategoryNav />
-            <main className="flex-1">{children}</main>
-            <SiteFooter />
-          </div>
-          <Toaster position="top-right" richColors />
-        </Providers>
+        <ReactQueryProvider>
+          <CartProvider>
+            <div className="flex min-h-screen flex-col bg-background text-foreground">
+              <SiteHeader />
+              <CategoryNav />
+              <main className="flex-1">{children}</main>
+              <SiteFooter />
+            </div>
+            <Toaster position="top-right" richColors />
+          </CartProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

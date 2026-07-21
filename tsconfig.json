@@ -12,6 +12,8 @@
     "lib/**/*.tsx",
     "stores/**/*.ts",
     "stores/**/*.tsx",
+    "providers/**/*.ts",
+    "providers/**/*.tsx",
     "eslint.config.js",
     "global.d.ts",
     "next-env.d.ts",

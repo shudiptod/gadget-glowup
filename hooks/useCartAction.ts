@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useAddToCart } from "@/hooks/useCart";
 import { toast } from "sonner";
+import { useCart } from "@/providers/cart-context";
 
 export interface UseCartActionProps {
     productId: string;
@@ -13,6 +14,7 @@ export interface UseCartActionProps {
 }
 
 export function useCartAction({ productId, variantId, maxStock, isProductInStock, initialQuantity = 1 }: UseCartActionProps) {
+    const { updateCartState } = useCart();
     const [quantity, setQuantity] = useState(initialQuantity);
     const { mutate: addToCart, isPending, isSuccess, isError } = useAddToCart();
 
@@ -29,7 +31,13 @@ export function useCartAction({ productId, variantId, maxStock, isProductInStock
         addToCart(
             { productId, variantId, quantity },
             {
-                onSuccess: () => toast.success(`Added ${quantity} x items to cart!`),
+                onSuccess: (data: any) => {
+                    toast.success(`Added ${quantity} x items to cart!`);
+                    console.log(data);
+                    if (data && data?.items && data?.items?.length > 0) {
+                        updateCartState(data?.items);
+                    }
+                },
                 onError: (error: any) => toast.error(error.response?.data?.error || "Failed to add to cart."),
             }
         );
