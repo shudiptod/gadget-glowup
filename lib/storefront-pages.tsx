@@ -1,96 +1,98 @@
-// "use client";
+"use client";
 
-// import Link from "next/link";
-// import { useRouter, useSearchParams } from "next/navigation";
-// import { useMemo, useState } from "react";
-// import {
-//   MapPin,
-//   Phone,
-//   Minus,
-//   Plus,
-//   Trash2,
-//   ShoppingBag,
-//   CheckCircle2,
-//   ShoppingCart,
-//   Truck,
-//   Repeat,
-//   ShieldCheck,
-//   CheckCircle2 as CheckCircle,
-//   MessageCircle,
-//   GitCompareArrows,
-//   Share2,
-//   Zap,
-// } from "lucide-react";
-// import { toast } from "sonner";
-// import { products, byCategory, bySlug } from "../data/products";
-// import { categories, categoryMap, type CategorySlug } from "../data/categories";
-// import { SectionHeading } from "../components/section-heading";
-// import { ProductCard } from "../components/product-card";
-// import { useCartAction } from "@/hooks/useCartAction";
+import { formatBDT } from "./utils";
 
-// export function AboutPage() {
-//   return (
-//     <div className="mx-auto max-w-3xl px-4 py-14">
-//       <h1 className="font-display text-3xl font-extrabold md:text-5xl">About Gajitto</h1>
-//       <div className="mt-6 space-y-4 text-sm leading-7 text-muted-foreground md:text-base">
-//         <p>
-//           Gajitto is a Bangladeshi consumer-tech retailer bringing together the best of everyday
-//           gadgets — smartphones, wireless audio, wearables, and smart accessories — under one roof.
-//         </p>
-//         <p>
-//           We partner directly with brands like Oraimo, JBL, Xiaomi, Titan and Daniel Hechter so you
-//           get authentic products, official warranty and after-sales support.
-//         </p>
-//         <p>
-//           Whether you're upgrading your daily driver, gifting a smartwatch, or replacing a pair of
-//           earbuds, our team is here to help — online and at our experience centers.
-//         </p>
-//       </div>
-//     </div>
-//   );
-// }
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
+import {
+  MapPin,
+  Phone,
+  Minus,
+  Plus,
+  Trash2,
+  ShoppingBag,
+  CheckCircle2,
+  ShoppingCart,
+  Truck,
+  Repeat,
+  ShieldCheck,
+  CheckCircle2 as CheckCircle,
+  MessageCircle,
+  GitCompareArrows,
+  Share2,
+  Zap,
+} from "lucide-react";
+import { toast } from "sonner";
+import { products, byCategory, bySlug } from "../data/products";
+import { categories, categoryMap, type CategorySlug } from "../data/categories";
+import { SectionHeading } from "../components/section-heading";
+import { ProductCard } from "../components/product-card";
+import { useCartAction } from "@/hooks/useCartAction";
 
-// export function BlogPage() {
-//   const posts = [
-//     {
-//       title: "Buying your first pair of TWS earbuds",
-//       excerpt: "What to check before you swipe.",
-//       tag: "Guide",
-//     },
-//     {
-//       title: "Smartphone battery care in 2026",
-//       excerpt: "Habits that keep your phone lasting longer.",
-//       tag: "Tips",
-//     },
-//     {
-//       title: "AMOLED vs LCD smartwatches",
-//       excerpt: "Which display suits your daily use?",
-//       tag: "Compare",
-//     },
-//   ];
+export function AboutPage() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-14">
+      <h1 className="font-display text-3xl font-extrabold md:text-5xl">About Gajitto</h1>
+      <div className="mt-6 space-y-4 text-sm leading-7 text-muted-foreground md:text-base">
+        <p>
+          Gajitto is a Bangladeshi consumer-tech retailer bringing together the best of everyday
+          gadgets — smartphones, wireless audio, wearables, and smart accessories — under one roof.
+        </p>
+        <p>
+          We partner directly with brands like Oraimo, JBL, Xiaomi, Titan and Daniel Hechter so you
+          get authentic products, official warranty and after-sales support.
+        </p>
+        <p>
+          Whether you're upgrading your daily driver, gifting a smartwatch, or replacing a pair of
+          earbuds, our team is here to help — online and at our experience centers.
+        </p>
+      </div>
+    </div>
+  );
+}
 
-//   return (
-//     <div className="mx-auto max-w-5xl px-4 py-10">
-//       <h1 className="font-display text-3xl font-extrabold md:text-4xl">Gajitto Blog</h1>
-//       <p className="mt-2 text-sm text-muted-foreground">Guides, reviews and gadget news.</p>
+export function BlogPage() {
+  const posts = [
+    {
+      title: "Buying your first pair of TWS earbuds",
+      excerpt: "What to check before you swipe.",
+      tag: "Guide",
+    },
+    {
+      title: "Smartphone battery care in 2026",
+      excerpt: "Habits that keep your phone lasting longer.",
+      tag: "Tips",
+    },
+    {
+      title: "AMOLED vs LCD smartwatches",
+      excerpt: "Which display suits your daily use?",
+      tag: "Compare",
+    },
+  ];
 
-//       <div className="mt-8 grid gap-4 md:grid-cols-3">
-//         {posts.map((p) => (
-//           <article
-//             key={p.title}
-//             className="rounded-2xl border bg-card p-5 transition hover:-translate-y-0.5 hover:shadow-md"
-//           >
-//             <span className="inline-flex rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
-//               {p.tag}
-//             </span>
-//             <h2 className="mt-3 font-display text-lg font-bold">{p.title}</h2>
-//             <p className="mt-2 text-sm text-muted-foreground">{p.excerpt}</p>
-//           </article>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-10">
+      <h1 className="font-display text-3xl font-extrabold md:text-4xl">Gajitto Blog</h1>
+      <p className="mt-2 text-sm text-muted-foreground">Guides, reviews and gadget news.</p>
+
+      <div className="mt-8 grid gap-4 md:grid-cols-3">
+        {posts.map((p) => (
+          <article
+            key={p.title}
+            className="rounded-2xl border bg-card p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <span className="inline-flex rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
+              {p.tag}
+            </span>
+            <h2 className="mt-3 font-display text-lg font-bold">{p.title}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{p.excerpt}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // export function CollectionPage() {
 //   const [maxPrice, setMaxPrice] = useState(50000);
@@ -483,272 +485,58 @@
 //   );
 // }
 
-// export function CheckoutPage() {
-//   const items = useCart((s) => s.items);
-//   const clear = useCart((s) => s.clear);
-//   const subtotal = cartSubtotal(items);
-//   const [step, setStep] = useState<1 | 2 | 3>(1);
-//   const [address, setAddress] = useState({ name: "", phone: "", address: "", city: "Dhaka" });
-//   const [shipping, setShipping] = useState<"standard" | "express">("standard");
-//   const shippingCost = shipping === "express" ? 150 : 80;
-//   const router = useRouter();
+export function SuccessPage() {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-20 text-center">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand/20 text-brand-foreground">
+        <CheckCircle2 className="h-9 w-9 text-[color:var(--brand)]" />
+      </div>
+      <h1 className="mt-6 font-display text-3xl font-extrabold md:text-4xl">
+        Thanks for your order!
+      </h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        We've received your order. Our team will call you to confirm within the next few hours.
+      </p>
+      <Link
+        href="/collection"
+        className="mt-6 inline-flex rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:brightness-110"
+      >
+        Continue shopping
+      </Link>
+    </div>
+  );
+}
 
-//   const placeOrder = () => {
-//     clear();
-//     toast.success("Order placed!", { description: "We'll contact you shortly to confirm." });
-//     router.push("/checkout/success");
-//   };
+export function StoresPage() {
+  const stores = [
+    { name: "Gajitto Gulshan", address: "Road 11, Gulshan 1, Dhaka", phone: "09666-777-001" },
+    {
+      name: "Gajitto Dhanmondi",
+      address: "Mirpur Road, Dhanmondi 27, Dhaka",
+      phone: "09666-777-002",
+    },
+    { name: "Gajitto Uttara", address: "Sector 3, Uttara, Dhaka", phone: "09666-777-003" },
+    { name: "Gajitto Chattogram", address: "GEC Circle, Chattogram", phone: "09666-777-004" },
+  ];
 
-//   if (items.length === 0) {
-//     return (
-//       <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-//         <h1 className="font-display text-3xl font-extrabold">Your cart is empty</h1>
-//         <p className="mt-2 text-sm text-muted-foreground">Add items before checking out.</p>
-//       </div>
-//     );
-//   }
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-10">
+      <h1 className="font-display text-3xl font-extrabold md:text-4xl">Our Stores</h1>
+      <p className="mt-2 text-sm text-muted-foreground">Visit us to try before you buy.</p>
 
-//   return (
-//     <div className="mx-auto max-w-6xl px-4 py-8">
-//       <h1 className="font-display text-3xl font-extrabold">Checkout</h1>
-//       <ol className="mt-6 flex items-center gap-2 text-sm">
-//         {(["Address", "Delivery", "Review"] as const).map((label, i) => {
-//           const n = (i + 1) as 1 | 2 | 3;
-//           const active = step === n;
-//           const done = step > n;
-//           return (
-//             <li key={label} className="flex items-center gap-2">
-//               <span
-//                 className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${active ? "bg-accent text-accent-foreground" : done ? "bg-brand text-brand-foreground" : "bg-muted text-muted-foreground"}`}
-//               >
-//                 {n}
-//               </span>
-//               <span className={active ? "font-semibold" : "text-muted-foreground"}>{label}</span>
-//               {i < 2 && <span className="mx-2 h-px w-8 bg-border" />}
-//             </li>
-//           );
-//         })}
-//       </ol>
-
-//       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
-//         <div className="rounded-2xl border bg-card p-5">
-//           {step === 1 && (
-//             <div className="space-y-3">
-//               <h2 className="text-sm font-semibold">Shipping address</h2>
-//               <Field
-//                 label="Full name"
-//                 value={address.name}
-//                 onChange={(v) => setAddress({ ...address, name: v })}
-//               />
-//               <Field
-//                 label="Phone number"
-//                 value={address.phone}
-//                 onChange={(v) => setAddress({ ...address, phone: v })}
-//               />
-//               <Field
-//                 label="Address"
-//                 value={address.address}
-//                 onChange={(v) => setAddress({ ...address, address: v })}
-//               />
-//               <Field
-//                 label="City"
-//                 value={address.city}
-//                 onChange={(v) => setAddress({ ...address, city: v })}
-//               />
-//               <button
-//                 onClick={() => setStep(2)}
-//                 disabled={!address.name || !address.phone || !address.address}
-//                 className="mt-3 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground disabled:opacity-50"
-//               >
-//                 Continue to delivery
-//               </button>
-//             </div>
-//           )}
-
-//           {step === 2 && (
-//             <div className="space-y-3">
-//               <h2 className="text-sm font-semibold">Delivery method</h2>
-//               {(["standard", "express"] as const).map((opt) => (
-//                 <label
-//                   key={opt}
-//                   className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 ${shipping === opt ? "border-accent bg-accent/5" : ""}`}
-//                 >
-//                   <span className="flex items-center gap-3">
-//                     <input
-//                       type="radio"
-//                       name="ship"
-//                       checked={shipping === opt}
-//                       onChange={() => setShipping(opt)}
-//                     />
-//                     <span>
-//                       <span className="block text-sm font-semibold capitalize">{opt} delivery</span>
-//                       <span className="block text-xs text-muted-foreground">
-//                         {opt === "standard" ? "3–5 business days" : "1–2 business days"}
-//                       </span>
-//                     </span>
-//                   </span>
-//                   <span className="text-sm font-semibold">
-//                     {formatBDT(opt === "standard" ? 80 : 150)}
-//                   </span>
-//                 </label>
-//               ))}
-//               <div className="flex gap-2 pt-2">
-//                 <button
-//                   onClick={() => setStep(1)}
-//                   className="rounded-full border px-5 py-2.5 text-sm font-semibold"
-//                 >
-//                   Back
-//                 </button>
-//                 <button
-//                   onClick={() => setStep(3)}
-//                   className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground"
-//                 >
-//                   Review order
-//                 </button>
-//               </div>
-//             </div>
-//           )}
-
-//           {step === 3 && (
-//             <div className="space-y-4">
-//               <h2 className="text-sm font-semibold">Review your order</h2>
-//               <div className="rounded-xl bg-muted p-4 text-sm">
-//                 <p className="font-semibold">{address.name}</p>
-//                 <p className="text-muted-foreground">{address.phone}</p>
-//                 <p className="text-muted-foreground">
-//                   {address.address}, {address.city}
-//                 </p>
-//                 <p className="mt-2 text-xs uppercase text-accent">{shipping} delivery</p>
-//               </div>
-//               <ul className="divide-y rounded-xl border">
-//                 {items.map((i) => (
-//                   <li key={i.id} className="flex items-center gap-3 p-3">
-//                     <img
-//                       src={i.image}
-//                       className="h-14 w-14 rounded-md bg-muted object-contain p-1"
-//                       alt=""
-//                     />
-//                     <div className="flex-1">
-//                       <p className="line-clamp-1 text-sm font-medium">{i.name}</p>
-//                       <p className="text-xs text-muted-foreground">Qty {i.qty}</p>
-//                     </div>
-//                     <span className="text-sm font-semibold">{formatBDT(i.price * i.qty)}</span>
-//                   </li>
-//                 ))}
-//               </ul>
-//               <div className="flex gap-2">
-//                 <button
-//                   onClick={() => setStep(2)}
-//                   className="rounded-full border px-5 py-2.5 text-sm font-semibold"
-//                 >
-//                   Back
-//                 </button>
-//                 <button
-//                   onClick={placeOrder}
-//                   className="flex-1 rounded-full bg-brand px-5 py-3 text-sm font-bold text-brand-foreground hover:brightness-110"
-//                 >
-//                   Place order · {formatBDT(subtotal + shippingCost)}
-//                 </button>
-//               </div>
-//             </div>
-//           )}
-//         </div>
-
-//         <aside className="h-fit rounded-2xl border bg-card p-5 lg:sticky lg:top-24">
-//           <h2 className="text-sm font-semibold">Summary</h2>
-//           <dl className="mt-3 space-y-2 text-sm">
-//             <div className="flex justify-between">
-//               <dt className="text-muted-foreground">Items ({items.length})</dt>
-//               <dd>{formatBDT(subtotal)}</dd>
-//             </div>
-//             <div className="flex justify-between">
-//               <dt className="text-muted-foreground">Shipping</dt>
-//               <dd>{formatBDT(shippingCost)}</dd>
-//             </div>
-//             <div className="mt-3 flex justify-between border-t pt-3 text-base font-bold">
-//               <dt>Total</dt>
-//               <dd className="text-[color:var(--price)]">{formatBDT(subtotal + shippingCost)}</dd>
-//             </div>
-//           </dl>
-//         </aside>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function Field({
-//   label,
-//   value,
-//   onChange,
-// }: {
-//   label: string;
-//   value: string;
-//   onChange: (v: string) => void;
-// }) {
-//   return (
-//     <label className="block">
-//       <span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>
-//       <input
-//         value={value}
-//         onChange={(e) => onChange(e.target.value)}
-//         className="w-full rounded-lg border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
-//       />
-//     </label>
-//   );
-// }
-
-// export function SuccessPage() {
-//   return (
-//     <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-//       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand/20 text-brand-foreground">
-//         <CheckCircle2 className="h-9 w-9 text-[color:var(--brand)]" />
-//       </div>
-//       <h1 className="mt-6 font-display text-3xl font-extrabold md:text-4xl">
-//         Thanks for your order!
-//       </h1>
-//       <p className="mt-2 text-sm text-muted-foreground">
-//         We've received your order. Our team will call you to confirm within the next few hours.
-//       </p>
-//       <Link
-//         href="/collection"
-//         className="mt-6 inline-flex rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground hover:brightness-110"
-//       >
-//         Continue shopping
-//       </Link>
-//     </div>
-//   );
-// }
-
-// export function StoresPage() {
-//   const stores = [
-//     { name: "Gajitto Gulshan", address: "Road 11, Gulshan 1, Dhaka", phone: "09666-777-001" },
-//     {
-//       name: "Gajitto Dhanmondi",
-//       address: "Mirpur Road, Dhanmondi 27, Dhaka",
-//       phone: "09666-777-002",
-//     },
-//     { name: "Gajitto Uttara", address: "Sector 3, Uttara, Dhaka", phone: "09666-777-003" },
-//     { name: "Gajitto Chattogram", address: "GEC Circle, Chattogram", phone: "09666-777-004" },
-//   ];
-
-//   return (
-//     <div className="mx-auto max-w-5xl px-4 py-10">
-//       <h1 className="font-display text-3xl font-extrabold md:text-4xl">Our Stores</h1>
-//       <p className="mt-2 text-sm text-muted-foreground">Visit us to try before you buy.</p>
-
-//       <div className="mt-8 grid gap-4 md:grid-cols-2">
-//         {stores.map((s) => (
-//           <div key={s.name} className="rounded-2xl border bg-card p-5">
-//             <h2 className="font-display text-lg font-bold">{s.name}</h2>
-//             <p className="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
-//               <MapPin className="mt-0.5 h-4 w-4 text-accent" /> {s.address}
-//             </p>
-//             <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-//               <Phone className="h-4 w-4 text-accent" /> {s.phone}
-//             </p>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
+      <div className="mt-8 grid gap-4 md:grid-cols-2">
+        {stores.map((s) => (
+          <div key={s.name} className="rounded-2xl border bg-card p-5">
+            <h2 className="font-display text-lg font-bold">{s.name}</h2>
+            <p className="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
+              <MapPin className="mt-0.5 h-4 w-4 text-accent" /> {s.address}
+            </p>
+            <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+              <Phone className="h-4 w-4 text-accent" /> {s.phone}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -9,18 +9,21 @@ import apiClient from "@/lib/apiClient";
 import type { SettingsResponse } from "@/lib/types";
 import { IProduct } from "@/types/api";
 
-async function getHomeSettings() {
-  try {
-    return await apiClient.get<SettingsResponse>("/settings");
-  } catch {
-    return null;
-  }
-}
+// async function getHomeSettings() {
+//   try {
+//     return await apiClient.get<SettingsResponse>("/settings");
+//   } catch {
+//     return null;
+//   }
+// }
 
 async function getFeaturedProducts(limit: number) {
   try {
-    return await apiClient.get<{ data: IProduct[] }>(`/products?limit=${limit}&isFeatured=true`);
-  } catch {
+    return await apiClient.get<{ data: IProduct[] }>(`/products?limit=${limit}&isFeatured=true`, {
+      next: { revalidate: 3600 }, // Revalidate every hour
+    });
+  } catch (e) {
+    console.log(e);
     throw new Error("Failed to fetch products");
   }
 }
@@ -29,16 +32,16 @@ async function getCategorizedProducts(limit: number, categorySlug: string) {
   try {
     return await apiClient.get<{ data: IProduct[] }>(
       `/products?limit=${limit}&category=${categorySlug}`,
+      {
+        next: { revalidate: 3600 }, // Revalidate every hour
+      },
     );
   } catch {
-    throw new Error("Failed to fetch products");
+    throw new Error("Failed to fetch categorized products");
   }
 }
 
 export default async function HomePage() {
-  const settings = await getHomeSettings();
-  const siteName = typeof settings?.data?.appName === "string" ? settings.data.appName : "DHON";
-
   const { data: featuredProducts } = await getFeaturedProducts(5);
   const { data: airbudsProducts } = await getCategorizedProducts(5, "airbuds");
   const { data: watchesProducts } = await getCategorizedProducts(5, "watch");

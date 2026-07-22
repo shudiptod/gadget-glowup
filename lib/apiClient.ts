@@ -34,10 +34,9 @@ async function request<T>(url: string, init: ApiRequestConfig & { method: string
   const isFormData = body instanceof FormData;
 
   const response = await fetch(requestUrl, {
+    credentials: "include",
     ...rest,
     method: init.method,
-    credentials: "include",
-    cache: "no-store",
     headers: {
       Accept: "application/json",
       ...(isFormData ? {} : { "Content-Type": "application/json" }),

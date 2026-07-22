@@ -1,6 +1,5 @@
-import { CategoryPage } from "@/lib/storefront-pages";
-
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return <CategoryPage slug={slug} />;
+  // return <CategoryPage slug={slug} />;
+  return <div></div>;
 }

@@ -43,7 +43,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const fetchCart = async () => {
     try {
       // 5. Apply the type to the API response
-      const data = await apiClient.get<ICartResponse>("/cart");
+      const data = await apiClient.get<ICartResponse>("/cart", { cache: "no-store" });
       console.log(data);
       setItems(data.items || []);
       setTotalQuantity(data.totalQuantity || 0);
