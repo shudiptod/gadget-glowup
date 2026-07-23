@@ -249,26 +249,23 @@ export default function ProductClient({ productData, cat, related }: ProductClie
       </div>
 
       <div className="mt-12">
-        <div className="flex flex-wrap gap-2 border-b">
-          {(
-            [
-              { k: "spec", label: "Specification" },
-              { k: "desc", label: "Description" },
-              { k: "warranty", label: "Warranty" },
-            ] as { k: "spec" | "desc" | "warranty"; label: string }[]
-          ).map((t) => (
-            <button
-              key={t.k}
-              onClick={() => setTab(t.k)}
-              className={`-mb-px rounded-t-lg px-4 py-2.5 text-sm font-semibold transition ${
-                tab === t.k
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+        <div className="sticky top-[72px] z-30 -mx-4 mb-8 bg-background/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: "specification", label: "Specification" },
+              { id: "description", label: "Description" },
+              { id: "warranty", label: "Warranty" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => scrollTo(item.id)}
+                className="rounded-full border bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition hover:border-accent hover:text-accent"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="rounded-b-2xl border border-t-0 bg-card p-5 md:p-6">
@@ -301,7 +298,7 @@ export default function ProductClient({ productData, cat, related }: ProductClie
                 </table>
               </div>
             </div>
-          )}
+          </section>
 
           {tab === "desc" && (
             <div>
@@ -316,17 +313,15 @@ export default function ProductClient({ productData, cat, related }: ProductClie
             </div>
           )}
 
-          {tab === "warranty" && (
-            <div>
-              <h2 className="font-display text-xl font-extrabold">Warranty</h2>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                <li>• 1 Year Official Brand Warranty on manufacturing defects.</li>
-                <li>• 7-Day easy replacement on DOA units.</li>
-                <li>• Physical damage, water damage and burn marks are not covered.</li>
-                <li>• Warranty claims must be raised with the original invoice.</li>
-              </ul>
-            </div>
-          )}
+          <section id="warranty" className="scroll-mt-28">
+            <h2 className="font-display text-xl font-extrabold">Warranty</h2>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li>• 1 Year Official Brand Warranty on manufacturing defects.</li>
+              <li>• 7-Day easy replacement on DOA units.</li>
+              <li>• Physical damage, water damage and burn marks are not covered.</li>
+              <li>• Warranty claims must be raised with the original invoice.</li>
+            </ul>
+          </section>
         </div>
       </div>
 
