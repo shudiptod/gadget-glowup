@@ -32,8 +32,16 @@ export default function ProductClient({ product, cat, related }: ProductClientPr
   const router = useRouter();
   // const add = useCart((s) => s.add);
   const [qty, setQty] = useState(1);
-  const [tab, setTab] = useState<"spec" | "desc" | "warranty">("spec");
   const [activeImg, setActiveImg] = useState(0);
+
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const offset = 24;
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
 
   const gallery = [product.image, product.image, product.image, product.image];
   const code = `GJT-${product.id
