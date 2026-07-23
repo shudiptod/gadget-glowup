@@ -3,6 +3,7 @@
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
 import { formatBDT } from "@/lib/utils";
+import { IProduct, IProductDetail } from "@/types/api";
 import {
   CheckCircle,
   GitCompareArrows,
@@ -21,18 +22,21 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-// Note: Replace 'any' with your actual types if you have them exported
 interface ProductClientProps {
-  product: any;
-  cat: any;
-  related: any[];
+  productData: IProductDetail;
+  cat: { name: string; slug: string; id: string };
+  related: IProduct[];
 }
 
-export default function ProductClient({ product, cat, related }: ProductClientProps) {
+export default function ProductClient({ productData, cat, related }: ProductClientProps) {
+  const { data: product } = productData;
   const router = useRouter();
-  // const add = useCart((s) => s.add);
+  const [tab, setTab] = useState("spec");
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
+
+  // Use the first variant as the default since the UI doesn't have variant selectors
+  const variant = product.variants?.[0] || null;
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
@@ -43,15 +47,34 @@ export default function ProductClient({ product, cat, related }: ProductClientPr
     }
   };
 
-  const gallery = [product.image, product.image, product.image, product.image];
+  const gallery = variant?.images || [];
   const code = `GJT-${product.id
     .replace(/[^a-z0-9]/gi, "")
     .toUpperCase()
     .slice(-6)}`;
 
+  // --- Pricing Calculation based on Interface ---
+  const basePrice = parseFloat(variant?.price || "0");
+  let salePrice = basePrice;
+  let oldPrice: number | null = null;
+
+  if (variant?.discountStatus) {
+    const discountVal = parseFloat(variant.discountValue || "0");
+    if (variant.discountType === "PERCENTAGE") {
+      salePrice = basePrice - (basePrice * discountVal) / 100;
+    } else {
+      salePrice = basePrice - discountVal;
+    }
+    oldPrice = basePrice; // Show the original price crossed out
+  }
+
+  const inStock = (variant?.stock || 0) > 0;
+  // Fallback for brand since it's missing from the interface
+  const displayBrand = product.categoryName;
+
   const handleAdd = () => {
     // add(product, qty);
-    toast.success("Added to cart", { description: `${qty} × ${product.name}` });
+    toast.success("Added to cart", { description: `${qty} × ${product.title}` });
   };
 
   const handleBuyNow = () => {
@@ -70,18 +93,20 @@ export default function ProductClient({ product, cat, related }: ProductClientPr
           {cat.name}
         </Link>
         <span className="mx-1.5">/</span>
-        <span className="text-foreground">{product.brand}</span>
+        <span className="text-foreground">{product.title}</span>
       </nav>
 
       <div className="mt-5 grid gap-8 lg:grid-cols-[1.05fr_1fr]">
         <div>
           <div className="overflow-hidden rounded-2xl border bg-card">
             <div className="aspect-square">
-              <img
-                src={gallery[activeImg]}
-                alt={product.name}
-                className="h-full w-full object-contain p-10"
-              />
+              {gallery[activeImg] && (
+                <img
+                  src={gallery[activeImg]}
+                  alt={product.title}
+                  className="h-full w-full object-contain p-10"
+                />
+              )}
             </div>
           </div>
           <div className="mt-3 flex gap-3 overflow-x-auto no-scrollbar">
@@ -105,31 +130,31 @@ export default function ProductClient({ product, cat, related }: ProductClientPr
         <div>
           <div className="flex items-start justify-between gap-4">
             <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {product.brand}
+              {displayBrand}
             </span>
             <button
               type="button"
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline"
-              onClick={() => toast("Added to compare", { description: product.name })}
+              onClick={() => toast("Added to compare", { description: product.title })}
             >
               <GitCompareArrows className="h-4 w-4" /> Add to Compare
             </button>
           </div>
 
           <h1 className="mt-3 font-display text-2xl font-extrabold leading-tight md:text-3xl">
-            {product.name}
+            {product.title}
           </h1>
 
           <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-2">
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-extrabold text-[color:var(--price)]">
-                {formatBDT(product.price)}
+                {formatBDT(salePrice)}
               </span>
               <span className="text-sm text-muted-foreground">(Cash Price)</span>
             </div>
-            {product.oldPrice && (
+            {oldPrice && (
               <span className="text-sm text-muted-foreground line-through">
-                {formatBDT(product.oldPrice)}
+                {formatBDT(oldPrice)}
               </span>
             )}
           </div>
@@ -137,9 +162,13 @@ export default function ProductClient({ product, cat, related }: ProductClientPr
           <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-b py-3 text-sm">
             <div className="flex items-center gap-1.5">
               <span className="font-semibold">Availability:</span>
-              <span className="inline-flex items-center gap-1 text-emerald-600">
+              <span
+                className={`inline-flex items-center gap-1 ${
+                  inStock ? "text-emerald-600" : "text-red-500"
+                }`}
+              >
                 <CheckCircle className="h-4 w-4" />
-                {product.inStock ? "In Stock" : "Out of Stock"}
+                {inStock ? "In Stock" : "Out of Stock"}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -174,20 +203,22 @@ export default function ProductClient({ product, cat, related }: ProductClientPr
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <button
               onClick={handleBuyNow}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition hover:brightness-110"
+              disabled={!inStock}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition hover:brightness-110 disabled:opacity-50"
             >
               <Zap className="h-4 w-4" /> Shop Now
             </button>
             <button
               onClick={handleAdd}
-              className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-foreground/15 bg-card px-6 py-3 text-sm font-semibold hover:border-accent hover:text-accent"
+              disabled={!inStock}
+              className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-foreground/15 bg-card px-6 py-3 text-sm font-semibold hover:border-accent hover:text-accent disabled:opacity-50"
             >
               <ShoppingCart className="h-4 w-4" /> Add To Cart
             </button>
           </div>
 
           <a
-            href={`https://wa.me/?text=${encodeURIComponent(`Hi, I'm interested in ${product.name}`)}`}
+            href={`https://wa.me/?text=${encodeURIComponent(`Hi, I'm interested in ${product.title}`)}`}
             target="_blank"
             rel="noreferrer"
             className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-emerald-50 px-6 py-3 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-200 transition hover:bg-emerald-100"
@@ -237,47 +268,50 @@ export default function ProductClient({ product, cat, related }: ProductClientPr
           </div>
         </div>
 
-        <div className="space-y-10">
-          <section id="specification" className="scroll-mt-28">
-            <h2 className="font-display text-xl font-extrabold">Specification</h2>
-            <div className="mt-4 overflow-hidden rounded-xl border">
-              <table className="w-full text-sm">
-                <tbody>
-                  <tr className="border-b bg-muted/40">
-                    <th className="w-40 px-4 py-3 text-left font-semibold">Brand</th>
-                    <td className="px-4 py-3">{product.brand}</td>
-                  </tr>
-                  <tr className="border-b">
-                    <th className="px-4 py-3 text-left font-semibold">Category</th>
-                    <td className="px-4 py-3">{cat.name}</td>
-                  </tr>
-                  {product.specs &&
-                    Object.entries(product.specs).map(([k, v], i) => (
-                      <tr key={k} className={i % 2 === 0 ? "border-b bg-muted/40" : "border-b"}>
-                        <th className="px-4 py-3 text-left font-semibold">{k}</th>
-                        {/* @ts-ignore */}
-                        <td className="px-4 py-3">{v}</td>
-                      </tr>
-                    ))}
-                  <tr>
-                    <th className="px-4 py-3 text-left font-semibold">Code</th>
-                    <td className="px-4 py-3 text-muted-foreground">{code}</td>
-                  </tr>
-                </tbody>
-              </table>
+        <div className="rounded-b-2xl border border-t-0 bg-card p-5 md:p-6">
+          {tab === "spec" && (
+            <div>
+              <h2 className="font-display text-xl font-extrabold">Specification</h2>
+              <div className="mt-4 overflow-hidden rounded-xl border">
+                <table className="w-full text-sm">
+                  <tbody>
+                    <tr className="border-b bg-muted/40">
+                      <th className="w-40 px-4 py-3 text-left font-semibold">Brand</th>
+                      <td className="px-4 py-3">{displayBrand}</td>
+                    </tr>
+                    <tr className="border-b">
+                      <th className="px-4 py-3 text-left font-semibold">Category</th>
+                      <td className="px-4 py-3">{cat.name}</td>
+                    </tr>
+                    {variant?.options &&
+                      Object.entries(variant.options).map(([k, v], i) => (
+                        <tr key={k} className={i % 2 === 0 ? "border-b bg-muted/40" : "border-b"}>
+                          <th className="px-4 py-3 text-left font-semibold">{k}</th>
+                          <td className="px-4 py-3">{v.val}</td>
+                        </tr>
+                      ))}
+                    <tr>
+                      <th className="px-4 py-3 text-left font-semibold">Code</th>
+                      <td className="px-4 py-3 text-muted-foreground">{code}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </section>
 
-          <section id="description" className="scroll-mt-28">
-            <h2 className="font-display text-xl font-extrabold">Description</h2>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {product.description}
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Gajitto brings you authentic {product.brand} products with full manufacturer warranty,
-              nationwide delivery, and hassle-free after-sales support.
-            </p>
-          </section>
+          {tab === "desc" && (
+            <div>
+              <h2 className="font-display text-xl font-extrabold">Description</h2>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                {product.description}
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                Gajitto brings you authentic {displayBrand} products with full manufacturer
+                warranty, nationwide delivery, and hassle-free after-sales support.
+              </p>
+            </div>
+          )}
 
           <section id="warranty" className="scroll-mt-28">
             <h2 className="font-display text-xl font-extrabold">Warranty</h2>
@@ -296,7 +330,7 @@ export default function ProductClient({ product, cat, related }: ProductClientPr
           <SectionHeading title="Related" accent="Products" />
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {related.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.productId} product={p} />
             ))}
           </div>
         </div>
