@@ -32,8 +32,16 @@ export default function ProductClient({ product, cat, related }: ProductClientPr
   const router = useRouter();
   // const add = useCart((s) => s.add);
   const [qty, setQty] = useState(1);
-  const [tab, setTab] = useState<"spec" | "desc" | "warranty">("spec");
   const [activeImg, setActiveImg] = useState(0);
+
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const offset = 24;
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
 
   const gallery = [product.image, product.image, product.image, product.image];
   const code = `GJT-${product.id
@@ -210,85 +218,76 @@ export default function ProductClient({ product, cat, related }: ProductClientPr
       </div>
 
       <div className="mt-12">
-        <div className="flex flex-wrap gap-2 border-b">
-          {(
-            [
-              { k: "spec", label: "Specification" },
-              { k: "desc", label: "Description" },
-              { k: "warranty", label: "Warranty" },
-            ] as { k: "spec" | "desc" | "warranty"; label: string }[]
-          ).map((t) => (
-            <button
-              key={t.k}
-              onClick={() => setTab(t.k)}
-              className={`-mb-px rounded-t-lg px-4 py-2.5 text-sm font-semibold transition ${
-                tab === t.k
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+        <div className="sticky top-[72px] z-30 -mx-4 mb-8 bg-background/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: "specification", label: "Specification" },
+              { id: "description", label: "Description" },
+              { id: "warranty", label: "Warranty" },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => scrollTo(item.id)}
+                className="rounded-full border bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition hover:border-accent hover:text-accent"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="rounded-b-2xl border border-t-0 bg-card p-5 md:p-6">
-          {tab === "spec" && (
-            <div>
-              <h2 className="font-display text-xl font-extrabold">Specification</h2>
-              <div className="mt-4 overflow-hidden rounded-xl border">
-                <table className="w-full text-sm">
-                  <tbody>
-                    <tr className="border-b bg-muted/40">
-                      <th className="w-40 px-4 py-3 text-left font-semibold">Brand</th>
-                      <td className="px-4 py-3">{product.brand}</td>
-                    </tr>
-                    <tr className="border-b">
-                      <th className="px-4 py-3 text-left font-semibold">Category</th>
-                      <td className="px-4 py-3">{cat.name}</td>
-                    </tr>
-                    {product.specs &&
-                      Object.entries(product.specs).map(([k, v], i) => (
-                        <tr key={k} className={i % 2 === 0 ? "border-b bg-muted/40" : "border-b"}>
-                          <th className="px-4 py-3 text-left font-semibold">{k}</th>
-                          {/* @ts-ignore */}
-                          <td className="px-4 py-3">{v}</td>
-                        </tr>
-                      ))}
-                    <tr>
-                      <th className="px-4 py-3 text-left font-semibold">Code</th>
-                      <td className="px-4 py-3 text-muted-foreground">{code}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+        <div className="space-y-10">
+          <section id="specification" className="scroll-mt-28">
+            <h2 className="font-display text-xl font-extrabold">Specification</h2>
+            <div className="mt-4 overflow-hidden rounded-xl border">
+              <table className="w-full text-sm">
+                <tbody>
+                  <tr className="border-b bg-muted/40">
+                    <th className="w-40 px-4 py-3 text-left font-semibold">Brand</th>
+                    <td className="px-4 py-3">{product.brand}</td>
+                  </tr>
+                  <tr className="border-b">
+                    <th className="px-4 py-3 text-left font-semibold">Category</th>
+                    <td className="px-4 py-3">{cat.name}</td>
+                  </tr>
+                  {product.specs &&
+                    Object.entries(product.specs).map(([k, v], i) => (
+                      <tr key={k} className={i % 2 === 0 ? "border-b bg-muted/40" : "border-b"}>
+                        <th className="px-4 py-3 text-left font-semibold">{k}</th>
+                        {/* @ts-ignore */}
+                        <td className="px-4 py-3">{v}</td>
+                      </tr>
+                    ))}
+                  <tr>
+                    <th className="px-4 py-3 text-left font-semibold">Code</th>
+                    <td className="px-4 py-3 text-muted-foreground">{code}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-          )}
+          </section>
 
-          {tab === "desc" && (
-            <div>
-              <h2 className="font-display text-xl font-extrabold">Description</h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {product.description}
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Gajitto brings you authentic {product.brand} products with full manufacturer
-                warranty, nationwide delivery, and hassle-free after-sales support.
-              </p>
-            </div>
-          )}
+          <section id="description" className="scroll-mt-28">
+            <h2 className="font-display text-xl font-extrabold">Description</h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {product.description}
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              Gajitto brings you authentic {product.brand} products with full manufacturer warranty,
+              nationwide delivery, and hassle-free after-sales support.
+            </p>
+          </section>
 
-          {tab === "warranty" && (
-            <div>
-              <h2 className="font-display text-xl font-extrabold">Warranty</h2>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                <li>• 1 Year Official Brand Warranty on manufacturing defects.</li>
-                <li>• 7-Day easy replacement on DOA units.</li>
-                <li>• Physical damage, water damage and burn marks are not covered.</li>
-                <li>• Warranty claims must be raised with the original invoice.</li>
-              </ul>
-            </div>
-          )}
+          <section id="warranty" className="scroll-mt-28">
+            <h2 className="font-display text-xl font-extrabold">Warranty</h2>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li>• 1 Year Official Brand Warranty on manufacturing defects.</li>
+              <li>• 7-Day easy replacement on DOA units.</li>
+              <li>• Physical damage, water damage and burn marks are not covered.</li>
+              <li>• Warranty claims must be raised with the original invoice.</li>
+            </ul>
+          </section>
         </div>
       </div>
 
