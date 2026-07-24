@@ -15,7 +15,6 @@ async function getFeaturedProducts(limit: number) {
       next: { revalidate: 3600 }, // Revalidate every hour
     });
   } catch (e) {
-    console.log(e);
     throw new Error("Failed to fetch products");
   }
 }

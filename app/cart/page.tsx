@@ -83,7 +83,6 @@ function CartItemRow({ item }: { item: ICartItem }) {
 
   // HANDLE QUANTITY UPDATE
   const handleUpdateQty = async (newQty: number) => {
-    console.log(newQty);
     if (newQty < 1) return handleRemove();
     if (newQty > item.stock) return toast.error(`Only ${item.stock} in stock`);
 
