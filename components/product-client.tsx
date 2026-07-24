@@ -2,8 +2,9 @@
 
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
-import { formatBDT } from "@/lib/utils";
-import { IProduct, IProductDetail } from "@/types/api";
+import { useCartAction } from "@/hooks/useCartAction";
+import { formatBDT, getOptimizedSupabaseUrl } from "@/lib/utils";
+import { IProduct, IProductDetail, IProductVariant } from "@/types/api";
 import {
   CheckCircle,
   GitCompareArrows,
@@ -17,10 +18,12 @@ import {
   Truck,
   Zap,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import ProductDescription from "./ProductDescription";
 
 interface ProductClientProps {
   productData: IProductDetail;
@@ -32,35 +35,36 @@ export default function ProductClient({ productData, cat, related }: ProductClie
   const { data: product } = productData;
   const router = useRouter();
   const [tab, setTab] = useState("spec");
-  const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
+  // Manage variant selection locally
+  const [selectedVariant, setSelectedVariant] = useState<IProductVariant | null>(
+    product.variants?.[0] || null,
+  );
 
-  // Use the first variant as the default since the UI doesn't have variant selectors
-  const variant = product.variants?.[0] || null;
+  const {
+    quantity,
+    increaseQuantity,
+    decreaseQuantity,
+    handleAddToCart,
+    isPending,
+    isAddDisabled,
+  } = useCartAction({
+    productId: product.id,
+    variantId: selectedVariant?.id || "",
+    maxStock: selectedVariant?.stock || 0,
+  });
 
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      const offset = 24;
-      const top = el.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-  };
-
-  const gallery = variant?.images || [];
-  const code = `GJT-${product.id
-    .replace(/[^a-z0-9]/gi, "")
-    .toUpperCase()
-    .slice(-6)}`;
+  const gallery = selectedVariant?.images || [];
+  const code = selectedVariant?.sku || "";
 
   // --- Pricing Calculation based on Interface ---
-  const basePrice = parseFloat(variant?.price || "0");
+  const basePrice = parseFloat(selectedVariant?.price || "0");
   let salePrice = basePrice;
   let oldPrice: number | null = null;
 
-  if (variant?.discountStatus) {
-    const discountVal = parseFloat(variant.discountValue || "0");
-    if (variant.discountType === "PERCENTAGE") {
+  if (selectedVariant?.discountStatus) {
+    const discountVal = parseFloat(selectedVariant.discountValue || "0");
+    if (selectedVariant.discountType === "PERCENTAGE") {
       salePrice = basePrice - (basePrice * discountVal) / 100;
     } else {
       salePrice = basePrice - discountVal;
@@ -68,18 +72,20 @@ export default function ProductClient({ productData, cat, related }: ProductClie
     oldPrice = basePrice; // Show the original price crossed out
   }
 
-  const inStock = (variant?.stock || 0) > 0;
+  const inStock = (selectedVariant?.stock || 0) > 0;
   // Fallback for brand since it's missing from the interface
-  const displayBrand = product.categoryName;
-
-  const handleAdd = () => {
-    // add(product, qty);
-    toast.success("Added to cart", { description: `${qty} × ${product.title}` });
-  };
+  const displayBrand =
+    (selectedVariant?.options && selectedVariant?.options["Brand"]?.val) ??
+    product.categoryName ??
+    "";
 
   const handleBuyNow = () => {
-    // add(product, qty);
     router.push("/checkout");
+  };
+
+  const handleVariantChange = (variant: IProductVariant) => {
+    setSelectedVariant(variant);
+    setActiveImg(0); // Reset the image to the first one of the new variant
   };
 
   return (
@@ -98,40 +104,63 @@ export default function ProductClient({ productData, cat, related }: ProductClie
 
       <div className="mt-5 grid gap-8 lg:grid-cols-[1.05fr_1fr]">
         <div>
-          <div className="overflow-hidden rounded-2xl border bg-card">
-            <div className="aspect-square">
+          <div className="relative overflow-hidden rounded-2xl border bg-card">
+            <div className="aspect-square relative">
               {gallery[activeImg] && (
-                <img
-                  src={gallery[activeImg]}
+                <Image
+                  fill
+                  src={getOptimizedSupabaseUrl(gallery[activeImg], {
+                    width: 621,
+                    height: 621,
+                  })}
                   alt={product.title}
-                  className="h-full w-full object-contain p-10"
+                  className={`h-full w-full object-contain p-10 transition-opacity ${
+                    !inStock ? "opacity-40" : ""
+                  }`}
                 />
+              )}
+              {/* --- OUT OF STOCK OVERLAY --- */}
+              {!inStock && (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/10 backdrop-blur-[2px]">
+                  <span className="rounded-lg bg-destructive px-6 py-2.5 text-lg font-extrabold uppercase tracking-widest text-destructive-foreground shadow-xl">
+                    Out of Stock
+                  </span>
+                </div>
               )}
             </div>
           </div>
-          <div className="mt-3 flex gap-3 overflow-x-auto no-scrollbar">
-            {gallery.map((src, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveImg(i)}
-                className={`h-20 w-20 shrink-0 overflow-hidden rounded-xl border bg-card p-2 transition ${
-                  activeImg === i
-                    ? "border-accent ring-2 ring-accent/30"
-                    : "hover:border-foreground/30"
-                }`}
-                aria-label={`View image ${i + 1}`}
-              >
-                <img src={src} alt="" className="h-full w-full object-contain" />
-              </button>
-            ))}
-          </div>
+          {gallery.length > 0 && (
+            <div className="mt-3 flex gap-3 overflow-x-auto no-scrollbar">
+              {gallery.map((src, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveImg(i)}
+                  className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border bg-card p-2 transition ${
+                    activeImg === i
+                      ? "border-accent ring-2 ring-accent/30"
+                      : "hover:border-foreground/30"
+                  }`}
+                  aria-label={`View image ${i + 1}`}
+                >
+                  <Image
+                    fill
+                    src={getOptimizedSupabaseUrl(src, { width: 80, height: 80 })}
+                    alt=""
+                    className="h-full w-full object-contain"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div>
           <div className="flex items-start justify-between gap-4">
-            <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {displayBrand}
-            </span>
+            {displayBrand && (
+              <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {displayBrand}
+              </span>
+            )}
             <button
               type="button"
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline"
@@ -147,9 +176,7 @@ export default function ProductClient({ productData, cat, related }: ProductClie
 
           <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-2">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold text-[color:var(--price)]">
-                {formatBDT(salePrice)}
-              </span>
+              <span className="text-3xl font-extrabold text-price">{formatBDT(salePrice)}</span>
               <span className="text-sm text-muted-foreground">(Cash Price)</span>
             </div>
             {oldPrice && (
@@ -171,30 +198,62 @@ export default function ProductClient({ productData, cat, related }: ProductClie
                 {inStock ? "In Stock" : "Out of Stock"}
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-semibold">Code:</span>
-              <span className="text-muted-foreground">{code}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-semibold">Category:</span>
-              <Link href={`/collection/${cat.slug}`} className="text-accent hover:underline">
-                {cat.name}
-              </Link>
-            </div>
+            {code && (
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold">Code:</span>
+                <span className="text-muted-foreground">{code}</span>
+              </div>
+            )}
+            {cat?.name && (
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold">Category:</span>
+                <Link href={`/collection/${cat.slug}`} className="text-accent hover:underline">
+                  {cat.name}
+                </Link>
+              </div>
+            )}
           </div>
+
+          {/* --- VARIANT SELECTOR --- */}
+          {product.variants && product.variants.length > 1 && (
+            <div className="mt-5">
+              <div className="text-sm font-semibold mb-2">Options:</div>
+              <div className="flex flex-wrap gap-2">
+                {product.variants.map((v) => (
+                  <button
+                    key={v.id}
+                    onClick={() => handleVariantChange(v)}
+                    className={`capitalize rounded-lg border px-4 py-2 text-sm transition ${
+                      selectedVariant?.id === v.id
+                        ? "border-accent bg-accent/5 text-accent font-semibold ring-1 ring-accent"
+                        : "hover:border-foreground/30 bg-card"
+                    }`}
+                  >
+                    {v.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mt-5">
             <div className="text-sm font-semibold">Select Quantity:</div>
             <div className="mt-2 inline-flex items-center rounded-full border bg-card">
               <button
-                className="p-2.5"
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                className="p-2.5 disabled:opacity-50"
+                onClick={decreaseQuantity}
+                disabled={isAddDisabled || quantity <= 1}
                 aria-label="Decrease"
               >
                 <Minus className="h-4 w-4" />
               </button>
-              <span className="w-10 text-center text-sm font-semibold">{qty}</span>
-              <button className="p-2.5" onClick={() => setQty((q) => q + 1)} aria-label="Increase">
+              <span className="w-10 text-center text-sm font-semibold">{quantity}</span>
+              <button
+                className="p-2.5 disabled:opacity-50"
+                onClick={increaseQuantity}
+                disabled={isAddDisabled || quantity >= (selectedVariant?.stock || 0)}
+                aria-label="Increase"
+              >
                 <Plus className="h-4 w-4" />
               </button>
             </div>
@@ -204,16 +263,17 @@ export default function ProductClient({ productData, cat, related }: ProductClie
             <button
               onClick={handleBuyNow}
               disabled={!inStock}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition hover:brightness-110 disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition hover:brightness-110 disabled:pointer-events-none disabled:opacity-50"
             >
               <Zap className="h-4 w-4" /> Shop Now
             </button>
             <button
-              onClick={handleAdd}
-              disabled={!inStock}
-              className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-foreground/15 bg-card px-6 py-3 text-sm font-semibold hover:border-accent hover:text-accent disabled:opacity-50"
+              onClick={handleAddToCart}
+              disabled={isAddDisabled}
+              className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-foreground/15 bg-card px-6 py-3 text-sm font-semibold hover:border-accent hover:text-accent disabled:pointer-events-none disabled:opacity-50"
             >
-              <ShoppingCart className="h-4 w-4" /> Add To Cart
+              <ShoppingCart className="h-4 w-4" />
+              {isPending ? "Adding..." : "Add To Cart"}
             </button>
           </div>
 
@@ -249,23 +309,26 @@ export default function ProductClient({ productData, cat, related }: ProductClie
       </div>
 
       <div className="mt-12">
-        <div className="sticky top-[72px] z-30 -mx-4 mb-8 bg-background/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-          <div className="flex flex-wrap gap-2">
-            {[
-              { id: "specification", label: "Specification" },
-              { id: "description", label: "Description" },
-              { id: "warranty", label: "Warranty" },
-            ].map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => scrollTo(item.id)}
-                className="rounded-full border bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition hover:border-accent hover:text-accent"
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-wrap gap-2 border-b">
+          {(
+            [
+              { k: "spec", label: "Specification" },
+              { k: "desc", label: "Description" },
+              { k: "warranty", label: "Warranty" },
+            ] as { k: "spec" | "desc" | "warranty"; label: string }[]
+          ).map((t) => (
+            <button
+              key={t.k}
+              onClick={() => setTab(t.k)}
+              className={`-mb-px rounded-t-lg px-4 py-2.5 text-sm font-semibold transition ${
+                tab === t.k
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
         <div className="rounded-b-2xl border border-t-0 bg-card p-5 md:p-6">
@@ -275,53 +338,55 @@ export default function ProductClient({ productData, cat, related }: ProductClie
               <div className="mt-4 overflow-hidden rounded-xl border">
                 <table className="w-full text-sm">
                   <tbody>
-                    <tr className="border-b bg-muted/40">
-                      <th className="w-40 px-4 py-3 text-left font-semibold">Brand</th>
-                      <td className="px-4 py-3">{displayBrand}</td>
-                    </tr>
-                    <tr className="border-b">
-                      <th className="px-4 py-3 text-left font-semibold">Category</th>
-                      <td className="px-4 py-3">{cat.name}</td>
-                    </tr>
-                    {variant?.options &&
-                      Object.entries(variant.options).map(([k, v], i) => (
+                    {displayBrand && (
+                      <tr className="border-b bg-muted/40">
+                        <th className="w-40 px-4 py-3 text-left font-semibold">Brand</th>
+                        <td className="px-4 py-3">{displayBrand}</td>
+                      </tr>
+                    )}
+                    {cat?.name && (
+                      <tr className="border-b">
+                        <th className="w-40 px-4 py-3 text-left font-semibold">Category</th>
+                        <td className="px-4 py-3">{cat.name}</td>
+                      </tr>
+                    )}
+                    {selectedVariant?.options &&
+                      Object.entries(selectedVariant.options).map(([k, v], i) => (
                         <tr key={k} className={i % 2 === 0 ? "border-b bg-muted/40" : "border-b"}>
-                          <th className="px-4 py-3 text-left font-semibold">{k}</th>
+                          <th className="w-40 px-4 py-3 text-left font-semibold">{k}</th>
                           <td className="px-4 py-3">{v.val}</td>
                         </tr>
                       ))}
-                    <tr>
-                      <th className="px-4 py-3 text-left font-semibold">Code</th>
-                      <td className="px-4 py-3 text-muted-foreground">{code}</td>
-                    </tr>
+                    {code && (
+                      <tr>
+                        <th className="w-40 px-4 py-3 text-left font-semibold">Code</th>
+                        <td className="px-4 py-3 text-muted-foreground">{code}</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
             </div>
-          </section>
+          )}
 
           {tab === "desc" && (
             <div>
               <h2 className="font-display text-xl font-extrabold">Description</h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {product.description}
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Gajitto brings you authentic {displayBrand} products with full manufacturer
-                warranty, nationwide delivery, and hassle-free after-sales support.
-              </p>
+              <ProductDescription description={product.description} />
             </div>
           )}
 
-          <section id="warranty" className="scroll-mt-28">
-            <h2 className="font-display text-xl font-extrabold">Warranty</h2>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li>• 1 Year Official Brand Warranty on manufacturing defects.</li>
-              <li>• 7-Day easy replacement on DOA units.</li>
-              <li>• Physical damage, water damage and burn marks are not covered.</li>
-              <li>• Warranty claims must be raised with the original invoice.</li>
-            </ul>
-          </section>
+          {tab === "warranty" && (
+            <div>
+              <h2 className="font-display text-xl font-extrabold">Warranty</h2>
+              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                <li>• 1 Year Official Brand Warranty on manufacturing defects.</li>
+                <li>• 7-Day easy replacement on DOA units.</li>
+                <li>• Physical damage, water damage and burn marks are not covered.</li>
+                <li>• Warranty claims must be raised with the original invoice.</li>
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 

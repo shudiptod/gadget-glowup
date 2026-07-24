@@ -1,14 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useCart } from "@/providers/cart-context";
 import { formatBDT } from "@/lib/utils";
+import apiClient from "@/lib/apiClient";
+import { SettingsResponse } from "@/lib/types";
+
+async function getHomeSettings() {
+  try {
+    return await apiClient.get<SettingsResponse>("/settings");
+  } catch {
+    return null;
+  }
+}
 
 export default function Page() {
   const { items, updateCartState } = useCart();
   const router = useRouter();
+
+  const [homeSettings, setHomeSettings] = useState<SettingsResponse | null>(null);
+  console.log(homeSettings);
+  useEffect(() => {
+    if (homeSettings) return;
+    getHomeSettings().then(setHomeSettings);
+  }, []);
 
   // 1. Calculate subtotal dynamically from the new CartItem shape
   const subtotal = items.reduce((sum, i) => sum + Number(i.price) * i.quantity, 0);

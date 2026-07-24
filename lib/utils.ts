@@ -27,7 +27,13 @@ export type SupabaseImageOptions = {
 
 export function getOptimizedSupabaseUrl(
   rawUrl: string,
-  options: SupabaseImageOptions = {}
+  options: SupabaseImageOptions = {
+    width: 1000,
+    height: 1000,
+    resize: "cover",
+    format: "webp",
+    quality: 100,
+  }
 ): string {
   try {
     if (!rawUrl) return '';

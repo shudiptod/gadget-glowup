@@ -9,14 +9,6 @@ import apiClient from "@/lib/apiClient";
 import type { SettingsResponse } from "@/lib/types";
 import { IProduct } from "@/types/api";
 
-// async function getHomeSettings() {
-//   try {
-//     return await apiClient.get<SettingsResponse>("/settings");
-//   } catch {
-//     return null;
-//   }
-// }
-
 async function getFeaturedProducts(limit: number) {
   try {
     return await apiClient.get<{ data: IProduct[] }>(`/products?limit=${limit}&isFeatured=true`, {

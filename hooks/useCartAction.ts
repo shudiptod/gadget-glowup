@@ -1,55 +1,76 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useAddToCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { useCart } from "@/providers/cart-context";
 
 export interface UseCartActionProps {
     productId: string;
-    variantId: string;
+    variantId: string; // Strictly typed as a string now
     maxStock: number;
-    isProductInStock: boolean;
     initialQuantity?: number;
 }
 
-export function useCartAction({ productId, variantId, maxStock, isProductInStock, initialQuantity = 1 }: UseCartActionProps) {
+export function useCartAction({
+    productId,
+    variantId,
+    maxStock,
+    initialQuantity = 1
+}: UseCartActionProps) {
     const { updateCartState } = useCart();
     const [quantity, setQuantity] = useState(initialQuantity);
     const { mutate: addToCart, isPending, isSuccess, isError } = useAddToCart();
 
-    const increaseQuantity = () => setQuantity((prev) => (prev < maxStock ? prev + 1 : prev));
-    const decreaseQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+    // Still necessary: Reset quantity to 1 when the user clicks a different variant
+    useEffect(() => {
+        setQuantity(initialQuantity);
+    }, [variantId, initialQuantity]);
 
-    const handleAddToCart = () => {
+    const increaseQuantity = useCallback(() => {
+        setQuantity((prev) => (prev < maxStock ? prev + 1 : prev));
+    }, [maxStock]);
 
-        if (isProductInStock === false || quantity > maxStock) {
-            toast.error("Stock unavailable.");
+    const decreaseQuantity = useCallback(() => {
+        setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+    }, []);
+
+    const handleAddToCart = useCallback(() => {
+        if (maxStock < 1) {
+            toast.error("This variant is currently out of stock.");
             return;
-        };
+        }
+
+        if (quantity > maxStock) {
+            toast.error(`Only ${maxStock} items available in stock.`);
+            return;
+        }
 
         addToCart(
             { productId, variantId, quantity },
             {
                 onSuccess: (data: any) => {
-                    toast.success(`Added ${quantity} x items to cart!`);
-                    console.log(data);
-                    if (data && data?.items && data?.items?.length > 0) {
-                        updateCartState(data?.items);
+                    toast.success(`Added ${quantity} item(s) to cart!`);
+                    if (data?.items?.length > 0) {
+                        updateCartState(data.items);
                     }
                 },
-                onError: (error: any) => toast.error(error.response?.data?.error || "Failed to add to cart."),
+                onError: (error: any) => {
+                    toast.error(error.response?.data?.error || "Failed to add to cart.");
+                },
             }
         );
-    };
+    }, [variantId, maxStock, quantity, productId, addToCart, updateCartState]);
 
     return {
         quantity,
+        setQuantity,
         increaseQuantity,
         decreaseQuantity,
         handleAddToCart,
         isPending,
-        isAddDisabled: !isProductInStock || isPending || maxStock < 1,
+        // Simplified condition: only disabled if out of stock or currently submitting
+        isAddDisabled: isPending || maxStock < 1,
         isSuccess,
         isError
     };

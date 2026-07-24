@@ -113,7 +113,10 @@ function CartItemRow({ item }: { item: ICartItem }) {
 
   // Ensure image is a string. If your backend returns an array, use item.image[0]
   const imageUrl = Array.isArray(item.image) ? item.image[0] : item.image;
-  const optimizedUrl = getOptimizedSupabaseUrl(imageUrl);
+  const optimizedUrl = getOptimizedSupabaseUrl(imageUrl, {
+    width: 100,
+    height: 100,
+  });
   return (
     <li
       className={`flex gap-4 p-4 transition-opacity ${isUpdating ? "opacity-50 pointer-events-none" : ""}`}

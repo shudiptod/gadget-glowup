@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { Search, ArrowRight } from "lucide-react";
-import SearchResultItem from "./search-result-item";
 import { ProductCard } from "./product-card";
+import { TopSearchedProducts } from "./top-searched-products";
 
 interface SearchResultsDropdownProps {
   isOpen: boolean;
@@ -26,9 +26,11 @@ export default function SearchResultsDropdown({
 
   return (
     <div className="absolute top-full lg:mt-3 mt-4 lg:w-200 w-[calc(100vw-32px)] left-0 bg-background border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-      <div className="flex items-center justify-between p-4 border-b border-white/5">
-        <h3 className="font-semibold text-lg text-foreground">Products</h3>
-        {results.length > 0 && (
+      <TopSearchedProducts />
+
+      {results.length > 0 && (
+        <div className="flex items-center justify-between p-4 border-b border-white/5">
+          <h3 className="font-semibold text-lg text-foreground">Products</h3>
           <Link
             href={`/search?q=${encodeURIComponent(query)}`}
             onClick={onClose}
@@ -36,15 +38,15 @@ export default function SearchResultsDropdown({
           >
             View all results <ArrowRight className="w-4 h-4" />
           </Link>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Product Grid Area */}
       <div className="p-4 lg:max-h-[60vh] max-h-[70vh] overflow-y-auto custom-scrollbar">
         {results.length > 0 ? (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             {results.map((product) => (
-              <ProductCard key={product.variantId} product={product} />
+              <ProductCard isSearchResult={true} key={product.variantId} product={product} />
             ))}
           </div>
         ) : isFetched ? (

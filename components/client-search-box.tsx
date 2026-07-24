@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation"; // 1. Import usePathname
 import { useProducts } from "@/hooks/useProducts";
 import { useDebounce } from "@/hooks/useDebounce";
 import SearchInput from "./search-input";
@@ -11,7 +11,9 @@ export default function ClientSearchBox() {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+
   const router = useRouter();
+  const pathname = usePathname(); // 2. Initialize usePathname
 
   const debouncedQuery = useDebounce(query, 400);
   const isQueryValid = debouncedQuery.length > 1;
@@ -40,6 +42,12 @@ export default function ClientSearchBox() {
       router.push(`/search?q=${encodeURIComponent(query)}`);
     }
   };
+
+  // 3. Add this effect to close the dropdown on route change
+  useEffect(() => {
+    setIsOpen(false);
+    // setQuery(""); // Optional: Uncomment if you also want to clear the typed text
+  }, [pathname]);
 
   // Side Effects
   useEffect(() => {

@@ -7,24 +7,45 @@ import Image from "next/image";
 import { getOptimizedSupabaseUrl } from "@/lib/utils";
 import { useCartAction } from "@/hooks/useCartAction";
 import { formatBDT } from "@/lib/utils";
+import apiClient from "@/lib/apiClient";
 
 function getProductPrice(product: IProduct) {
   const price = Number(product.price ?? 0);
   return Number.isFinite(price) ? price : 0;
 }
 
-export function ProductCard({ product }: { product: IProduct }) {
+const handleProductClick = (productId: string) => {
+  try {
+    apiClient.post("/search/log", { productId });
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+};
+
+export function ProductCard({
+  product,
+  isSearchResult = false,
+}: {
+  product: IProduct;
+  isSearchResult?: boolean;
+}) {
   const price = getProductPrice(product);
   const salePrice = Number(product.salePrice ?? 0);
   const title = String(product.productTitle);
   const image = String(product.thumbnail);
-  const optimizedUrl = getOptimizedSupabaseUrl(image);
+  const optimizedUrl = getOptimizedSupabaseUrl(image, {
+    width: 280,
+    height: 280,
+    resize: "cover",
+    format: "webp",
+    quality: 100,
+  });
   const category = String(product.categoryName);
   const { handleAddToCart, isPending, isAddDisabled, isSuccess, isError } = useCartAction({
     productId: product.productId,
     variantId: product.variantId,
     maxStock: product.stock,
-    isProductInStock: product.stock > 0,
   });
 
   return (
@@ -39,6 +60,7 @@ export function ProductCard({ product }: { product: IProduct }) {
       <Link
         href={`/product/${product.slug}`}
         className="relative block aspect-square overflow-hidden bg-muted"
+        onClick={() => isSearchResult && handleProductClick(product.productId)}
       >
         <Image
           fill
@@ -62,6 +84,7 @@ export function ProductCard({ product }: { product: IProduct }) {
           {category}
         </span>
         <Link
+          onClick={() => isSearchResult && handleProductClick(product.productId)}
           href={`/product/${product.slug ?? product.productId}`}
           className="line-clamp-2 min-h-10 text-sm font-medium text-foreground hover:text-accent"
         >
@@ -78,6 +101,7 @@ export function ProductCard({ product }: { product: IProduct }) {
             disabled={isAddDisabled || isPending}
             onClick={() => {
               handleAddToCart();
+              isSearchResult && handleProductClick(product.productId);
             }}
             className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground opacity-90 hover:opacity-100 hover:bg-accent cursor-pointer disabled:opacity-15 disabled:cursor-not-allowed disabled:hover:bg-primary disabled:hover:text-primary-foreground"
             aria-label="Add to cart"

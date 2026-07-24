@@ -79,7 +79,7 @@ export default function SearchUI({ initialProducts, query, total, totalPages }: 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {products.map((p, index) => (
           // Using index as fallback key in case variantId repeats during pagination overlap
-          <ProductCard key={`${p.variantId}-${index}`} product={p} />
+          <ProductCard isSearchResult={true} key={`${p.variantId}-${index}`} product={p} />
         ))}
       </div>
 

@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <main className="flex-1">{children}</main>
               <SiteFooter />
             </div>
-            <Toaster position="top-right" richColors />
+            <Toaster position="bottom-right" richColors />
           </CartProvider>
         </ReactQueryProvider>
       </body>
