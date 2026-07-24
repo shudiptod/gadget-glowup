@@ -21,7 +21,7 @@ export default function Page() {
   const router = useRouter();
 
   const [homeSettings, setHomeSettings] = useState<SettingsResponse | null>(null);
-  console.log(homeSettings);
+
   useEffect(() => {
     if (homeSettings) return;
     getHomeSettings().then(setHomeSettings);
