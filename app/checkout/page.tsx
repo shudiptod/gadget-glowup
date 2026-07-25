@@ -27,24 +27,31 @@ export default function Page() {
     getHomeSettings().then(setHomeSettings);
   }, []);
 
-  // 1. Calculate subtotal dynamically from the new CartItem shape
   const subtotal = items.reduce((sum, i) => sum + Number(i.price) * i.quantity, 0);
 
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  // Reduced steps from 3 to 2
+  const [step, setStep] = useState<1 | 2>(1);
   const [address, setAddress] = useState({ name: "", phone: "", address: "", city: "Dhaka" });
-  const [shipping, setShipping] = useState<"standard" | "express">("standard");
-  const shippingCost = shipping === "express" ? 150 : 80;
+  const [zone, setZone] = useState<"inside" | "outside">("inside");
+
+  // Calculate shipping cost directly based on the selected zone
+  const shippingCost =
+    zone === "outside"
+      ? Number(homeSettings?.data?.shippingOutsideDhaka || 120)
+      : Number(homeSettings?.data?.shippingInsideDhaka || 60);
 
   const placeOrder = async () => {
     try {
-      // TODO: Replace this with your actual API call to create the order
-      // await apiClient.post("/api/orders", { address, shipping, items });
+      const { orderNumber }: any = await apiClient.post("/orders/v2", {
+        address: address,
+        zone: zone,
+        paymentMethod: "cod",
+      });
 
-      // 2. Clear the cart using the context function we built earlier
       updateCartState([]);
 
       toast.success("Order placed!", { description: "We'll contact you shortly to confirm." });
-      router.push("/checkout/success");
+      router.push(`/checkout/success?orderNumber=${orderNumber}`);
     } catch (error) {
       toast.error("Failed to place order. Please try again.");
     }
@@ -62,9 +69,11 @@ export default function Page() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="font-display text-3xl font-extrabold">Checkout</h1>
+
+      {/* Updated Stepper for 2 steps */}
       <ol className="mt-6 flex items-center gap-2 text-sm">
-        {(["Address", "Delivery", "Review"] as const).map((label, i) => {
-          const n = (i + 1) as 1 | 2 | 3;
+        {(["Address", "Review"] as const).map((label, i) => {
+          const n = (i + 1) as 1 | 2;
           const active = step === n;
           const done = step > n;
           return (
@@ -75,7 +84,7 @@ export default function Page() {
                 {n}
               </span>
               <span className={active ? "font-semibold" : "text-muted-foreground"}>{label}</span>
-              {i < 2 && <span className="mx-2 h-px w-8 bg-border" />}
+              {i < 1 && <span className="mx-2 h-px w-8 bg-border" />}
             </li>
           );
         })}
@@ -106,61 +115,54 @@ export default function Page() {
                 value={address.city}
                 onChange={(v) => setAddress({ ...address, city: v })}
               />
+
+              <div className="pt-2">
+                <span className="mb-2 block text-xs font-medium text-muted-foreground">
+                  Delivery Zone
+                </span>
+                <div className="space-y-2">
+                  <label
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 ${zone === "inside" ? "border-accent bg-accent/5" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="zone"
+                      checked={zone === "inside"}
+                      onChange={() => setZone("inside")}
+                    />
+                    <span className="text-sm font-semibold">Inside Dhaka Metro</span>
+                  </label>
+
+                  <label
+                    className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 ${zone === "outside" ? "border-accent bg-accent/5" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="zone"
+                      checked={zone === "outside"}
+                      onChange={() => setZone("outside")}
+                    />
+                    <span className="flex flex-col">
+                      <span className="text-sm font-semibold">Outside Dhaka / Suburbs</span>
+                      <span className="text-xs text-muted-foreground">
+                        Savar, Keraniganj, Tongi, etc.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+
               <button
                 onClick={() => setStep(2)}
-                disabled={!address.name || !address.phone || !address.address}
-                className="mt-3 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+                disabled={!address.name || !address.phone || !address.address || !address.city}
+                className="mt-4 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground disabled:opacity-50"
               >
-                Continue to delivery
+                Review order
               </button>
             </div>
           )}
 
           {step === 2 && (
-            <div className="space-y-3">
-              <h2 className="text-sm font-semibold">Delivery method</h2>
-              {(["standard", "express"] as const).map((opt) => (
-                <label
-                  key={opt}
-                  className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 ${shipping === opt ? "border-accent bg-accent/5" : ""}`}
-                >
-                  <span className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="ship"
-                      checked={shipping === opt}
-                      onChange={() => setShipping(opt)}
-                    />
-                    <span>
-                      <span className="block text-sm font-semibold capitalize">{opt} delivery</span>
-                      <span className="block text-xs text-muted-foreground">
-                        {opt === "standard" ? "3–5 business days" : "1–2 business days"}
-                      </span>
-                    </span>
-                  </span>
-                  <span className="text-sm font-semibold">
-                    {formatBDT(opt === "standard" ? 80 : 150)}
-                  </span>
-                </label>
-              ))}
-              <div className="flex gap-2 pt-2">
-                <button
-                  onClick={() => setStep(1)}
-                  className="rounded-full border px-5 py-2.5 text-sm font-semibold"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={() => setStep(3)}
-                  className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground"
-                >
-                  Review order
-                </button>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
             <div className="space-y-4">
               <h2 className="text-sm font-semibold">Review your order</h2>
               <div className="rounded-xl bg-muted p-4 text-sm">
@@ -169,11 +171,12 @@ export default function Page() {
                 <p className="text-muted-foreground">
                   {address.address}, {address.city}
                 </p>
-                <p className="mt-2 text-xs uppercase text-accent">{shipping} delivery</p>
+                <p className="mt-2 text-xs uppercase text-accent">
+                  Delivery: {zone === "inside" ? "Dhaka Metro" : "Outside Dhaka"}
+                </p>
               </div>
               <ul className="divide-y rounded-xl border">
                 {items.map((i) => {
-                  // 3. Handle image array fallback correctly
                   const imageUrl = Array.isArray(i.image) ? i.image[0] : i.image;
 
                   return (
@@ -185,7 +188,6 @@ export default function Page() {
                       />
                       <div className="flex-1">
                         <p className="line-clamp-1 text-sm font-medium">{i.name}</p>
-                        {/* Show variant name if it's not the default placeholder */}
                         {i.variantName && i.variantName !== "Default" && (
                           <p className="text-xs text-muted-foreground">{i.variantName}</p>
                         )}
@@ -200,7 +202,7 @@ export default function Page() {
               </ul>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(1)}
                   className="rounded-full border px-5 py-2.5 text-sm font-semibold"
                 >
                   Back
@@ -229,7 +231,7 @@ export default function Page() {
             </div>
             <div className="mt-3 flex justify-between border-t pt-3 text-base font-bold">
               <dt>Total</dt>
-              <dd className="text-[color:var(--price)]">{formatBDT(subtotal + shippingCost)}</dd>
+              <dd className="text-price">{formatBDT(subtotal + shippingCost)}</dd>
             </div>
           </dl>
         </aside>
