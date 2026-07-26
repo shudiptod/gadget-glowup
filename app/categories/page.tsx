@@ -19,21 +19,18 @@ export const metadata: Metadata = {
 const FALLBACK_IMAGE =
   "https://wwsygxbdccehktouuodc.supabase.co/storage/v1/object/public/store-assets/products/images/Redmi%20Note%2015%204G.png";
 
-async function getRoots(): Promise<ICollection[]> {
+async function getRootCategories() {
   try {
-    const res = await apiClient.get<ICollectionListResponse>("/products/roots");
-    return res?.data ?? [];
+    return await apiClient.get<ICollectionListResponse>(`/products/roots`);
   } catch (error) {
-    console.error("Failed to fetch root categories:", error);
-    return [];
+    console.error("Failed to fetch roots:", error);
+    return { success: false, data: [] };
   }
 }
 
 async function getChildren(slug: string): Promise<ICollection[]> {
   try {
-    const res = await apiClient.get<ICollectionListResponse>(
-      `/products/categories/${slug}`,
-    );
+    const res = await apiClient.get<ICollectionListResponse>(`/products/categories/${slug}`);
     return res?.data ?? [];
   } catch (error) {
     console.error(`Failed to fetch children for ${slug}:`, error);
@@ -42,7 +39,7 @@ async function getChildren(slug: string): Promise<ICollection[]> {
 }
 
 export default async function CategoriesPage() {
-  const roots = await getRoots();
+  const { data: roots } = await getRootCategories();
   const groups = await Promise.all(
     roots.map(async (root) => ({
       root,
@@ -63,8 +60,8 @@ export default async function CategoriesPage() {
         </nav>
         <SectionHeading title="All" accent="Categories" />
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Explore every collection at Gajitto. Tap a category to see all its products,
-          or jump straight into a subcategory.
+          Explore every collection at Gajitto. Tap a category to see all its products, or jump
+          straight into a subcategory.
         </p>
       </div>
 
@@ -90,11 +87,7 @@ export default async function CategoriesPage() {
         )}
 
         {groups.map(({ root, children }) => (
-          <section
-            key={root.id}
-            id={`cat-${root.slug}`}
-            className="scroll-mt-24"
-          >
+          <section key={root.id} id={`cat-${root.slug}`} className="scroll-mt-24">
             <div className="flex items-end justify-between gap-4 border-b pb-3">
               <div className="flex items-center gap-3">
                 <div className="relative h-12 w-12 overflow-hidden rounded-xl border bg-card">
@@ -111,8 +104,7 @@ export default async function CategoriesPage() {
                     {root.name}
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    {children.length}{" "}
-                    {children.length === 1 ? "subcategory" : "subcategories"}
+                    {children.length} {children.length === 1 ? "subcategory" : "subcategories"}
                   </p>
                 </div>
               </div>
