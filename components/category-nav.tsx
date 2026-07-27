@@ -39,7 +39,7 @@ export async function CategoryNav() {
           ))}
 
           {/* Render "More" Dropdown for hidden root categories */}
-          {hiddenCategories.length > 0 && (
+          {/* {hiddenCategories.length > 0 && (
             <li className="group relative hidden sm:block">
               <button className="flex items-center gap-1 whitespace-nowrap rounded-full px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground">
                 More <ChevronDown className="h-4 w-4" />
@@ -60,7 +60,7 @@ export async function CategoryNav() {
                 </ul>
               </div>
             </li>
-          )}
+          )} */}
         </ul>
       </div>
     </div>

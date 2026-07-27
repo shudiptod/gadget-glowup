@@ -1,7 +1,4 @@
-// app/product/[slug]/page.tsx
 import ProductClient from "@/components/product-client";
-import { categoryMap, CategorySlug } from "@/data/categories";
-import { byCategory, bySlug } from "@/data/products";
 import apiClient from "@/lib/apiClient";
 import { IProduct, IProductDetail } from "@/types/api";
 import Link from "next/link";

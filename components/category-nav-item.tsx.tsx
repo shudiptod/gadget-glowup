@@ -14,7 +14,6 @@ async function getSubcategories(slug: string) {
   try {
     return await apiClient.get<ICollectionListResponse>(`/products/categories/${slug}`);
   } catch (error) {
-    console.error(`Failed to fetch children for ${slug}:`, error);
     return { success: false, data: [] };
   }
 }
