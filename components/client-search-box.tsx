@@ -46,7 +46,7 @@ export default function ClientSearchBox() {
   // 3. Add this effect to close the dropdown on route change
   useEffect(() => {
     setIsOpen(false);
-    // setQuery(""); // Optional: Uncomment if you also want to clear the typed text
+    setQuery("");
   }, [pathname]);
 
   // Side Effects

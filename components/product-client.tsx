@@ -3,7 +3,7 @@
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
 import { useCartAction } from "@/hooks/useCartAction";
-import { formatBDT, getOptimizedSupabaseUrl } from "@/lib/utils";
+import { formatBDT } from "@/lib/utils";
 import { IProduct, IProductDetail, IProductVariant } from "@/types/api";
 import {
   CheckCircle,
@@ -80,7 +80,7 @@ export default function ProductClient({ productData, cat, related }: ProductClie
     "";
 
   const handleBuyNow = () => {
-    router.push("/checkout");
+    handleAddToCart(true);
   };
 
   const handleVariantChange = (variant: IProductVariant) => {
@@ -109,10 +109,7 @@ export default function ProductClient({ productData, cat, related }: ProductClie
               {gallery[activeImg] && (
                 <Image
                   fill
-                  src={getOptimizedSupabaseUrl(gallery[activeImg], {
-                    width: 621,
-                    height: 621,
-                  })}
+                  src={gallery[activeImg]}
                   alt={product.title}
                   className={`h-full w-full object-contain p-10 transition-opacity ${
                     !inStock ? "opacity-40" : ""
@@ -142,12 +139,7 @@ export default function ProductClient({ productData, cat, related }: ProductClie
                   }`}
                   aria-label={`View image ${i + 1}`}
                 >
-                  <Image
-                    fill
-                    src={getOptimizedSupabaseUrl(src, { width: 80, height: 80 })}
-                    alt=""
-                    className="h-full w-full object-contain"
-                  />
+                  <Image fill src={src} alt="" className="h-full w-full object-contain" />
                 </button>
               ))}
             </div>
@@ -263,14 +255,14 @@ export default function ProductClient({ productData, cat, related }: ProductClie
             <button
               onClick={handleBuyNow}
               disabled={!inStock}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition hover:brightness-110 disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow-sm transition hover:brightness-110 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
             >
               <Zap className="h-4 w-4" /> Shop Now
             </button>
             <button
-              onClick={handleAddToCart}
+              onClick={() => handleAddToCart()}
               disabled={isAddDisabled}
-              className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-foreground/15 bg-card px-6 py-3 text-sm font-semibold hover:border-accent hover:text-accent disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-foreground/15 bg-card px-6 py-3 text-sm font-semibold hover:border-accent hover:text-accent disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
             >
               <ShoppingCart className="h-4 w-4" />
               {isPending ? "Adding..." : "Add To Cart"}
@@ -314,7 +306,7 @@ export default function ProductClient({ productData, cat, related }: ProductClie
             [
               { k: "spec", label: "Specification" },
               { k: "desc", label: "Description" },
-              { k: "warranty", label: "Warranty" },
+              // { k: "warranty", label: "Warranty" },
             ] as { k: "spec" | "desc" | "warranty"; label: string }[]
           ).map((t) => (
             <button
@@ -376,7 +368,7 @@ export default function ProductClient({ productData, cat, related }: ProductClie
             </div>
           )}
 
-          {tab === "warranty" && (
+          {/* {tab === "warranty" && (
             <div>
               <h2 className="font-display text-xl font-extrabold">Warranty</h2>
               <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
@@ -386,7 +378,7 @@ export default function ProductClient({ productData, cat, related }: ProductClie
                 <li>• Warranty claims must be raised with the original invoice.</li>
               </ul>
             </div>
-          )}
+          )} */}
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useAddToCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { useCart } from "@/providers/cart-context";
+import { useRouter } from "next/navigation";
 
 export interface UseCartActionProps {
     productId: string;
@@ -21,6 +22,7 @@ export function useCartAction({
     const { updateCartState } = useCart();
     const [quantity, setQuantity] = useState(initialQuantity);
     const { mutate: addToCart, isPending, isSuccess, isError } = useAddToCart();
+    const router = useRouter();
 
     // Still necessary: Reset quantity to 1 when the user clicks a different variant
     useEffect(() => {
@@ -35,7 +37,7 @@ export function useCartAction({
         setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
     }, []);
 
-    const handleAddToCart = useCallback(() => {
+    const handleAddToCart = useCallback((directCheckout?: boolean) => {
         if (maxStock < 1) {
             toast.error("This variant is currently out of stock.");
             return;
@@ -53,6 +55,9 @@ export function useCartAction({
                     toast.success(`Added ${quantity} item(s) to cart!`);
                     if (data?.items?.length > 0) {
                         updateCartState(data.items);
+                    }
+                    if (directCheckout) {
+                        router.push("/checkout");
                     }
                 },
                 onError: (error: any) => {
