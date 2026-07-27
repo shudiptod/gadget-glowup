@@ -23,7 +23,7 @@ export async function CategoryNav() {
   return (
     <div className="border-b bg-background">
       <div className="mx-auto max-w-7xl px-4">
-        <ul className="flex items-center gap-1 py-2 text-sm font-medium">
+        <ul className="flex items-center gap-1 py-2 text-sm font-medium justify-between">
           <li>
             <Link
               href="/collection"
