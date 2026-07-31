@@ -51,7 +51,7 @@ export default async function Page(props: PageProps) {
   const totalPages = productData?.pagination?.totalPages || 0;
 
   const categoryResponse = await getCategories();
-  const categories = categoryResponse?.data || [];
+  const categories = categoryResponse?.data;
 
   return (
     <CollectionUI

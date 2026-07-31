@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+// 1. Import useParams
+import { useRouter, usePathname, useSearchParams, useParams } from "next/navigation";
 import { useInView } from "react-intersection-observer";
 import Link from "next/link";
-import { IProduct, PaginatedResponse } from "@/types/api";
+import { CollectionData, IProduct, PaginatedResponse } from "@/types/api";
 import { ProductCard } from "./product-card";
 import apiClient from "@/lib/apiClient";
 import { Loader2 } from "lucide-react";
@@ -12,8 +13,9 @@ import { Loader2 } from "lucide-react";
 interface CollectionUIProps {
   initialProducts: IProduct[];
   totalProducts: number;
-  categories: { name: string; slug: string }[];
+  categories: CollectionData[];
   totalPages: number;
+  name?: string;
 }
 
 export default function CollectionUI({
@@ -21,10 +23,15 @@ export default function CollectionUI({
   totalProducts,
   categories,
   totalPages,
+  name = "All Products",
 }: CollectionUIProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // 2. Grab the dynamic route parameters
+  const routeParams = useParams();
+  const slug = routeParams?.slug as string | undefined;
 
   // Read current active filters from the URL
   const currentMaxPrice = Number(searchParams.get("maxPrice")) || 50000;
@@ -58,9 +65,15 @@ export default function CollectionUI({
       const params = new URLSearchParams(searchParams.toString());
       params.set("page", nextPage.toString());
       params.set("limit", "12");
+
+      // 3. Apply the category filter safely for infinite scroll
       if (params.has("categories")) {
+        // User has checked boxes in the sidebar
         params.set("category", params.get("categories")!.replace(/\|/g, ","));
         params.delete("categories"); // Clean up frontend-only param before API call
+      } else if (slug) {
+        // User has NOT checked boxes, but is on a specific category page (e.g. /collection/laptops)
+        params.set("category", slug);
       }
 
       const response = await apiClient.get<PaginatedResponse<IProduct>>(
@@ -76,7 +89,8 @@ export default function CollectionUI({
     } finally {
       setIsLoadingMore(false);
     }
-  }, [page, totalPages, isLoadingMore, searchParams]);
+    // 4. Add slug to the dependency array
+  }, [page, totalPages, isLoadingMore, searchParams, slug]);
 
   // 3. Trigger load more when scroll reaches the bottom sentinel
   useEffect(() => {
@@ -111,8 +125,7 @@ export default function CollectionUI({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <h1 className="font-display text-3xl font-extrabold">All Products</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{totalProducts} products</p>
+      <h1 className="font-display text-3xl font-extrabold">{name}</h1>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[240px_1fr] items-start relative">
         <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start sticky max-h-[calc(100vh-281px)] overflow-y-auto">

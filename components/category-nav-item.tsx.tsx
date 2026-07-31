@@ -2,25 +2,20 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import apiClient from "@/lib/apiClient";
-import { ICollectionListResponse } from "@/types/api";
-
-export type RootCategory = {
-  id: string;
-  name: string;
-  slug: string;
-};
+import { ICollectionListResponse, IRootCategory } from "@/types/api";
 
 async function getSubcategories(slug: string) {
   try {
     return await apiClient.get<ICollectionListResponse>(`/products/categories/${slug}`);
   } catch (error) {
-    return { success: false, data: [] };
+    return { success: false, data: { children: [] } };
   }
 }
 
-export async function CategoryNavItem({ category }: { category: RootCategory }) {
+export async function CategoryNavItem({ category }: { category: IRootCategory }) {
   // Fetch children specific to this category item
-  const { data: children } = await getSubcategories(category.slug);
+  const { data } = await getSubcategories(category.slug);
+  const children = data.children;
   const hasChildren = children && children.length > 0;
 
   if (!hasChildren) {
@@ -28,7 +23,7 @@ export async function CategoryNavItem({ category }: { category: RootCategory }) 
       <li>
         <Link
           href={`/collection/${category.slug}`}
-          className="whitespace-nowrap rounded-full px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="whitespace-nowrap border border-transparent rounded-full px-3 py-1.5 text-muted-foreground hover:border-accent hover:text-accent"
         >
           {category.name}
         </Link>
@@ -40,7 +35,7 @@ export async function CategoryNavItem({ category }: { category: RootCategory }) 
     <li className="group relative">
       <Link
         href={`/collection/${category.slug}`}
-        className="flex items-center gap-1 whitespace-nowrap rounded-full px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+        className="flex items-center gap-1 whitespace-nowrap border border-transparent rounded-full px-3 py-1.5 text-muted-foreground hover:border-accent hover:text-accent group-hover:text-accent"
       >
         {category.name}
         <ChevronDown className="h-3 w-3 transition-transform group-hover:rotate-180" />
@@ -53,7 +48,7 @@ export async function CategoryNavItem({ category }: { category: RootCategory }) 
             <li key={child.slug}>
               <Link
                 href={`/collection/${child.slug}`}
-                className="block rounded-sm px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="block text-sm px-3 py-1.5 text-muted-foreground hover:text-accent"
               >
                 {child.name}
               </Link>

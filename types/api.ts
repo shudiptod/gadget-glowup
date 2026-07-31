@@ -107,6 +107,7 @@ export interface CollectionData extends ICollection {
     maxPrice: number | string;
 }
 
+
 export interface CollectionResponse {
     success: boolean;
     data: CollectionData;
@@ -114,7 +115,18 @@ export interface CollectionResponse {
 
 export interface ICollectionListResponse {
     success: boolean;
-    data: ICollection[];
+    data: CollectionData[];
+}
+
+export interface IRootCategory {
+    id: string;
+    name: string;
+    slug: string;
+};
+
+export interface IRootCollectionListResponse {
+    success: boolean;
+    data: IRootCategory[];
 }
 
 export interface IAddress {
