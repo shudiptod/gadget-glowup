@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { MapPin, Phone } from "lucide-react";
 
 // Type Definition matching your Schema

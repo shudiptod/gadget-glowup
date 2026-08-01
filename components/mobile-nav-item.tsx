@@ -36,7 +36,7 @@ export async function MobileNavItem({ category }: { category: IRootCategory }) {
         <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
       </summary>
       <div className="flex flex-col gap-2 pb-3 pl-4 pt-1">
-        {children.map((child: ICollection) => (
+        {children?.map((child: ICollection) => (
           <Link
             key={child.slug}
             href={`/collection/${child.slug}`}

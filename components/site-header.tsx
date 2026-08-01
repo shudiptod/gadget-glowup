@@ -33,14 +33,14 @@ export async function SiteHeader() {
           <ClientSearchBox />
         </div>
 
-        <nav className="hidden items-center gap-6 text-sm lg:flex lg:order-3">
+        {/* <nav className="hidden items-center gap-6 text-sm lg:flex lg:order-3">
           <Link href="/blog" className="hover:text-accent transition-colors">
             Blog
           </Link>
           <Link href="/service" className="hover:text-accent transition-colors">
             Service
           </Link>
-        </nav>
+        </nav> */}
 
         <div className="flex items-center gap-2 order-2 lg:order-4 shrink-0">
           {/* Extracted Cart Logic */}
