@@ -86,23 +86,21 @@ export function CategoryNavClient({ categories, children }: CategoryNavClientPro
       </div>
 
       {/* ACTUAL VISIBLE NAV */}
-      <ul className="flex items-center gap-[2px] py-2 text-sm font-medium justify-between">
+      <ul className="flex items-center gap-0.5 py-2 text-sm font-medium justify-between">
         {visibleChildren}
 
-        {hiddenChildren.length > 0 && (
+        {/* {hiddenChildren.length > 0 && (
           <li className="relative group shrink-0">
             <button className="flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-1.5 hover:bg-muted">
               More <ChevronDown className="h-4 w-4" />
             </button>
-
-            {/* Dropdown Menu (Hover to display) */}
             <ul className="absolute right-0 top-full z-50 hidden pt-2 group-hover:block">
               <div className="rounded-md border bg-background p-2 shadow-md flex flex-col gap-2 min-w-[200px]">
                 {hiddenChildren}
               </div>
             </ul>
           </li>
-        )}
+        )} */}
       </ul>
     </div>
   );
