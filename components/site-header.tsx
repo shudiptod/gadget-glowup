@@ -56,7 +56,7 @@ export async function SiteHeader() {
           {/* The New Mobile Drawer */}
           <MobileDrawer>
             {/* Standard Links */}
-            <div className="mb-2 flex flex-col border-b border-border/50 pb-2">
+            {/* <div className="mb-2 flex flex-col border-b border-border/50 pb-2">
               <Link
                 href="/blog"
                 className="block py-3 text-sm text-foreground hover:text-accent font-medium"
@@ -69,7 +69,7 @@ export async function SiteHeader() {
               >
                 Service
               </Link>
-            </div>
+            </div> */}
 
             {/* Dynamic Categories */}
             <h3 className="mb-1 mt-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">

@@ -153,13 +153,13 @@ export default function ProductClient({ productData, cat, related }: ProductClie
                 {displayBrand}
               </span>
             )}
-            <button
+            {/* <button
               type="button"
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:underline"
               onClick={() => toast("Added to compare", { description: product.title })}
             >
               <GitCompareArrows className="h-4 w-4" /> Add to Compare
-            </button>
+            </button> */}
           </div>
 
           <h1 className="mt-3 font-display text-2xl font-extrabold leading-tight md:text-3xl">
