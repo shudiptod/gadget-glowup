@@ -58,7 +58,6 @@ export default async function CategoryPage(props: PageProps) {
 
   const categoryResponse = await getCategoryData(slug);
   const rawData = categoryResponse?.data;
-  console.log(rawData);
 
   // Safely extract the children exactly as we did in the mobile nav item
   const childCategories = Array.isArray(rawData) ? rawData : rawData?.children || [];

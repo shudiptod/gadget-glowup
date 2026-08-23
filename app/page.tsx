@@ -8,6 +8,7 @@ import { byCategory, featured } from "@/data/products";
 import apiClient from "@/lib/apiClient";
 import type { SettingsResponse } from "@/lib/types";
 import { IProduct } from "@/types/api";
+import SEOContentSection from "@/components/SEOContentSection";
 
 async function getFeaturedProducts(limit: number) {
   try {
@@ -34,9 +35,9 @@ async function getCategorizedProducts(limit: number, categorySlug: string) {
 
 export default async function HomePage() {
   const { data: featuredProducts } = await getFeaturedProducts(5);
-  const { data: airbudsProducts } = await getCategorizedProducts(5, "airbuds");
-  const { data: watchesProducts } = await getCategorizedProducts(5, "watch");
-  const { data: wiredEarphonesProducts } = await getCategorizedProducts(5, "wired-earphones");
+  const { data: airbudsProducts } = await getCategorizedProducts(5, "earbuds");
+  const { data: watchesProducts } = await getCategorizedProducts(5, "watches");
+  const { data: wiredEarphonesProducts } = await getCategorizedProducts(5, "earphones");
 
   return (
     <>
@@ -44,16 +45,26 @@ export default async function HomePage() {
       <TrustStrip />
       <FeaturedCategories />
       <ProductRail title="Featured" accent="Products" products={featuredProducts} viewAllTo="" />
-      <ProductRail title="Latest" accent="Airbuds" products={airbudsProducts} viewAllTo="airbuds" />
+      <ProductRail title="Latest" accent="Airbuds" products={airbudsProducts} viewAllTo="earbuds" />
       <ExperienceBand />
       <ProductRail title="Trendy" accent="Watches" products={watchesProducts} viewAllTo="watch" />
       <ProductRail
         title="Wired"
         accent="Earphones"
         products={wiredEarphonesProducts}
-        viewAllTo="wired-earphones"
+        viewAllTo="earphones"
       />
-      <BrandStrip />
+      <SEOContentSection
+        links={{
+          smartphones: "/collection/phone",
+          audio: "/collection/airbuds",
+          watches: "/collection/watches",
+          charging: "/collection/charging",
+          technology: "/collection",
+          gadgets: "/collection/camera-networking",
+        }}
+      />
+      {/* <BrandStrip /> */}
     </>
   );
 }

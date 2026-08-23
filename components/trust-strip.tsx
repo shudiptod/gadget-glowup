@@ -11,8 +11,8 @@ const items = [
 export function TrustStrip() {
   return (
     <section className="mx-auto max-w-7xl px-4 pt-6">
-      <div className="rounded-2xl border bg-card px-3 py-4 md:px-6">
-        <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+      <div className="rounded-2xl border bg-card px-3 py-6 md:px-6 relative overflow-auto">
+        <ul className="grid grid-cols-5 h-full min-w-max md:static gap-3 md:grid-cols-3 lg:grid-cols-5">
           {items.map((it) => (
             <li key={it.label} className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-accent">
