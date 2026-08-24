@@ -24,7 +24,6 @@ export type SupabaseImageOptions = {
   quality?: number;
 };
 
-
 export function getOptimizedSupabaseUrl(
   rawUrl: string,
   options: SupabaseImageOptions = {
@@ -33,21 +32,21 @@ export function getOptimizedSupabaseUrl(
     resize: "cover",
     format: "webp",
     quality: 100,
-  }
+  },
 ): string {
   try {
-    if (!rawUrl) return '';
+    if (!rawUrl) return "";
     const url = new URL(rawUrl);
 
-    if (url.pathname.includes('/object/public/')) {
-      url.pathname = url.pathname.replace('/object/public/', '/render/image/public/');
+    if (url.pathname.includes("/object/public/")) {
+      url.pathname = url.pathname.replace("/object/public/", "/render/image/public/");
     }
 
-    if (options.width) url.searchParams.set('width', options.width.toString());
-    if (options.height) url.searchParams.set('height', options.height.toString());
-    if (options.resize) url.searchParams.set('resize', options.resize);
-    if (options.format) url.searchParams.set('format', options.format);
-    if (options.quality) url.searchParams.set('quality', options.quality.toString());
+    if (options.width) url.searchParams.set("width", options.width.toString());
+    if (options.height) url.searchParams.set("height", options.height.toString());
+    if (options.resize) url.searchParams.set("resize", options.resize);
+    if (options.format) url.searchParams.set("format", options.format);
+    if (options.quality) url.searchParams.set("quality", options.quality.toString());
 
     return url.toString();
   } catch (error) {

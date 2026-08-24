@@ -10,10 +10,12 @@ const TABS = [
   { id: "faq", label: "FAQs", icon: HelpCircle },
 ];
 
-export default async function SupportPage({ searchParams }: { searchParams: { tab?: string } }) {
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+
+export default async function SupportPage(props: { searchParams: SearchParams }) {
   const response = await getPageSettings();
   const settings = response?.data as SiteSettings | undefined;
-
+  const searchParams = await props.searchParams;
   // Read the active tab from the URL query string (default to "warranty")
   const activeTab = searchParams?.tab || "warranty";
 

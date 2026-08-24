@@ -101,7 +101,7 @@ export function ProductCard({
             disabled={isAddDisabled || isPending}
             onClick={() => {
               handleAddToCart();
-              isSearchResult && handleProductClick(product.productId);
+              if (isSearchResult) handleProductClick(product.productId);
             }}
             className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground opacity-90 hover:opacity-100 hover:bg-accent cursor-pointer disabled:opacity-15 disabled:cursor-not-allowed disabled:hover:bg-primary disabled:hover:text-primary-foreground"
             aria-label="Add to cart"
