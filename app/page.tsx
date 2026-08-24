@@ -3,10 +3,8 @@ import { TrustStrip } from "@/components/trust-strip";
 import { FeaturedCategories } from "@/components/featured-categories";
 import { ProductRail } from "@/components/product-rail";
 import { ExperienceBand } from "@/components/experience-band";
-import { BrandStrip } from "@/components/brand-strip";
-import { byCategory, featured } from "@/data/products";
+import { BrandBento } from "@/components/brand-strip";
 import apiClient from "@/lib/apiClient";
-import type { SettingsResponse } from "@/lib/types";
 import { IProduct } from "@/types/api";
 import SEOContentSection from "@/components/SEOContentSection";
 
@@ -28,7 +26,7 @@ async function getCategorizedProducts(limit: number, categorySlug: string) {
         next: { revalidate: 3600 }, // Revalidate every hour
       },
     );
-  } catch {
+  } catch (e) {
     throw new Error("Failed to fetch categorized products");
   }
 }
@@ -38,6 +36,9 @@ export default async function HomePage() {
   const { data: airbudsProducts } = await getCategorizedProducts(5, "earbuds");
   const { data: watchesProducts } = await getCategorizedProducts(5, "watches");
   const { data: wiredEarphonesProducts } = await getCategorizedProducts(5, "earphones");
+  const { data: laptopProducts } = await getCategorizedProducts(5, "laptop");
+  const { data: phoneProducts } = await getCategorizedProducts(5, "phone");
+  const { data: lifestyleProducts } = await getCategorizedProducts(5, "lifestyle");
 
   return (
     <>
@@ -54,6 +55,14 @@ export default async function HomePage() {
         products={wiredEarphonesProducts}
         viewAllTo="earphones"
       />
+      <ProductRail
+        title="Lifestyle"
+        accent="Gadgets"
+        products={lifestyleProducts}
+        viewAllTo="lifestyle"
+      />
+      <ProductRail title="Top" accent="Smartphones" products={phoneProducts} viewAllTo="phone" />
+      <ProductRail title="Trendy" accent="Laptops" products={laptopProducts} viewAllTo="laptop" />
       <SEOContentSection
         links={{
           smartphones: "/collection/phone",
@@ -64,7 +73,7 @@ export default async function HomePage() {
           gadgets: "/collection/camera-networking",
         }}
       />
-      {/* <BrandStrip /> */}
+      <BrandBento />
     </>
   );
 }

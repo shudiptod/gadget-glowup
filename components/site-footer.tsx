@@ -5,7 +5,7 @@ import apiClient from "@/lib/apiClient";
 import { SettingsResponse } from "@/lib/types";
 
 // Adding a more specific type based on your JSON response for type safety
-interface SiteSettings {
+export interface SiteSettings {
   appName?: string;
   description?: string;
   contactEmail?: string;
@@ -20,7 +20,7 @@ interface SiteSettings {
   [key: string]: any;
 }
 
-async function getPageSettings() {
+export async function getPageSettings() {
   try {
     return await apiClient.get<SettingsResponse>("/settings");
   } catch {
@@ -85,10 +85,19 @@ export async function SiteFooter() {
               <Link href="/collection/smartphones">Smartphones</Link>
             </li>
             <li>
+              <Link href="/collection/laptop">Laptops</Link>
+            </li>
+            <li>
+              <Link href="/collection/audio">Audio</Link>
+            </li>
+            <li>
               <Link href="/collection/airbuds">Airbuds</Link>
             </li>
             <li>
-              <Link href="/collection/watch">Watches</Link>
+              <Link href="/collection/smartwatches">Smartwatches</Link>
+            </li>
+            <li>
+              <Link href="/collection/gadgets-accessories">Gadgets and Accessories</Link>
             </li>
           </FooterCol>
 
@@ -112,6 +121,9 @@ export async function SiteFooter() {
             </li>
             <li>
               <Link href="/stores">Store locations</Link>
+            </li>
+            <li>
+              <Link href="/support">Support</Link>
             </li>
           </FooterCol>
         </div>

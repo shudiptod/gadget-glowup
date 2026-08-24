@@ -1,10 +1,41 @@
-export const brands = [
-  "Oraimo",
-  "JBL",
-  "Xiaomi",
-  "Titan",
-  "truke",
-  "Daniel Hechter",
-  "Redmi",
-  "V2A",
-];
+export const brandGroups = {
+  mobile: [
+    { name: "Apple", src: "/images/brand-logos/apple.svg", scale: 1.5 },
+    { name: "Samsung", src: "/images/brand-logos/samsung.svg" },
+    { name: "Xiaomi", src: "/images/brand-logos/xiaomi.svg" },
+    { name: "Mi", src: "/images/brand-logos/mi.svg" },
+    { name: "Oppo", src: "/images/brand-logos/oppo.svg" },
+    { name: "Vivo", src: "/images/brand-logos/vivo.svg" },
+    { name: "Nokia", src: "/images/brand-logos/nokia.svg" },
+    { name: "Nothing", src: "/images/brand-logos/nothing.svg" },
+  ],
+  computing: [
+    { name: "HP", src: "/images/brand-logos/hp.svg" },
+    { name: "Lenovo", src: "/images/brand-logos/lenovo.svg" },
+    { name: "Acer", src: "/images/brand-logos/acer.svg" },
+    { name: "MSI", src: "/images/brand-logos/msi.svg" },
+    { name: "Frontech", src: "/images/brand-logos/frontech.svg" },
+  ],
+  audio: [
+    { name: "Sony", src: "/images/brand-logos/sony.svg" },
+    { name: "JBL", src: "/images/brand-logos/jbl.svg" },
+    { name: "Awei", src: "/images/brand-logos/awei.svg" },
+    { name: "QCY", src: "/images/brand-logos/qcy.svg" },
+    { name: "Oraimo", src: "/images/brand-logos/oraimo.svg" },
+    { name: "truke", src: "/images/brand-logos/truke.svg" },
+  ],
+  accessories: [
+    { name: "Anker", src: "/images/brand-logos/anker.svg" },
+    { name: "Baseus", src: "/images/brand-logos/baseus.svg" },
+    { name: "Hoco", src: "/images/brand-logos/hoco.svg" },
+    { name: "Xundd", src: "/images/brand-logos/xundd.svg" },
+    { name: "UranusZ", src: "/images/brand-logos/uranusZ.svg" },
+  ],
+  lifestyleAndMisc: [
+    { name: "DJI", src: "/images/brand-logos/dji.svg" },
+    { name: "TP-Link", src: "/images/brand-logos/tp link.svg" },
+    { name: "Daniel Hechter", src: "/images/brand-logos/daniel hechter.svg" },
+    { name: "V2A", src: "/images/brand-logos/v2a.svg" },
+    { name: "Indena", src: "/images/brand-logos/indena.svg" },
+  ],
+};

@@ -25,7 +25,7 @@ export async function FeaturedCategories() {
   return (
     <section className="mx-auto max-w-7xl px-4 pt-12">
       <SectionHeading title="Featured" accent="Categories" />
-      <div className="mt-6 grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-9">
+      <div className="mt-6 flex gap-4 gap-y-10 lg:gap-x-4 flex-wrap justify-center">
         {featuredCategories.slice(0, 9).map((c) => (
           <Link
             key={c.slug}

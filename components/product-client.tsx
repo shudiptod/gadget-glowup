@@ -288,7 +288,7 @@ export default function ProductClient({ productData, cat, related }: ProductClie
 
           <ul className="mt-4 grid grid-cols-3 gap-2 text-xs">
             <li className="flex items-center gap-2 rounded-lg border p-2.5">
-              <Repeat className="h-4 w-4 text-accent" /> Easy Exchange
+              <Repeat className="h-4 w-4 text-accent" /> Fast Delivery
             </li>
             <li className="flex items-center gap-2 rounded-lg border p-2.5">
               <ShieldCheck className="h-4 w-4 text-accent" /> Warranty

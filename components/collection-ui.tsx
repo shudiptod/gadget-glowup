@@ -128,9 +128,9 @@ export default function CollectionUI({
       <h1 className="font-display text-3xl font-extrabold">{name}</h1>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[240px_1fr] items-start relative">
-        <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start sticky max-h-[calc(100vh-281px)] overflow-y-auto">
+        <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start sticky">
           {/* Category Filter */}
-          <div className="rounded-xl border p-4">
+          <div className="rounded-xl border p-4 max-h-[calc(100vh-281px)] overflow-y-auto">
             <h3 className="text-sm font-semibold">Category</h3>
             <ul className="mt-3 space-y-2 text-sm">
               {categories.map((c) => (
