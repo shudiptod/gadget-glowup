@@ -11,7 +11,7 @@ import SEOContentSection from "@/components/SEOContentSection";
 async function getFeaturedProducts(limit: number) {
   try {
     return await apiClient.get<{ data: IProduct[] }>(`/products?limit=${limit}&isFeatured=true`, {
-      next: { revalidate: 3600 }, // Revalidate every hour
+      next: { revalidate: 900 }, // Revalidate every hour
     });
   } catch (e) {
     throw new Error("Failed to fetch products");
@@ -23,7 +23,7 @@ async function getCategorizedProducts(limit: number, categorySlug: string) {
     return await apiClient.get<{ data: IProduct[] }>(
       `/products?limit=${limit}&category=${categorySlug}`,
       {
-        next: { revalidate: 3600 }, // Revalidate every hour
+        next: { revalidate: 900 }, // Revalidate every hour
       },
     );
   } catch (e) {
