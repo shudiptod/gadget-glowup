@@ -48,7 +48,7 @@ type DgePayResponse = {
 };
 
 export default function Page() {
-  const { items, updateCartState } = useCart();
+  const { items, cartId, isCartLoaded, updateCartState } = useCart();
   const router = useRouter();
   const submissionInProgress = useRef(false);
 
@@ -78,6 +78,8 @@ export default function Page() {
 
   // 1. Load Draft from LocalStorage on mount
   useEffect(() => {
+    if (!isCartLoaded) return;
+
     const draft = localStorage.getItem(CHECKOUT_DRAFT_KEY);
     const savedPayment = localStorage.getItem(PENDING_PAYMENT_KEY);
     if (draft) {
@@ -93,7 +95,7 @@ export default function Page() {
     if (savedPayment) {
       try {
         const parsed = JSON.parse(savedPayment) as PendingPaymentOrder;
-        if (parsed.orderNumber && parsed.phone) {
+        if (parsed.orderNumber && parsed.phone && items.length === 0) {
           const recovered =
             parsed.status === "initiating"
               ? {
@@ -105,13 +107,15 @@ export default function Page() {
               : parsed;
           setPendingPayment(recovered);
           localStorage.setItem(PENDING_PAYMENT_KEY, JSON.stringify(recovered));
+        } else {
+          localStorage.removeItem(PENDING_PAYMENT_KEY);
         }
       } catch (e) {
         console.error("Failed to parse pending payment", e);
       }
     }
     setIsLoaded(true);
-  }, []);
+  }, [isCartLoaded, items.length]);
 
   // 2. Save Draft to LocalStorage on change
   useEffect(() => {
@@ -253,10 +257,15 @@ export default function Page() {
 
   const placeOrder = async () => {
     if (submissionInProgress.current) return;
+    if (!cartId) {
+      toast.error("Your cart is still syncing. Please refresh and try again.");
+      return;
+    }
     submissionInProgress.current = true;
     setIsSubmitting(true);
     try {
       const response = await apiClient.post<OrderCreateResponse>("/orders/v2", {
+        cartId,
         address: { ...address, phone: address.phone.trim() },
         zone: zone,
         paymentMethod: paymentMethod === "cod" ? "cod" : "online",
@@ -268,6 +277,7 @@ export default function Page() {
       if (!orderNumber)
         throw new Error("The order was created, but its order number was not returned.");
       localStorage.removeItem(CHECKOUT_DRAFT_KEY);
+      localStorage.removeItem(PENDING_PAYMENT_KEY);
 
       if (paymentMethod === "online") {
         updateCartState([]);

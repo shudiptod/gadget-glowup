@@ -121,14 +121,14 @@ function CartItemRow({ item }: { item: ICartItem }) {
       className={`flex gap-4 p-4 transition-opacity ${isUpdating ? "opacity-50 pointer-events-none" : ""}`}
     >
       <Link
-        href={`/product/${item.slug}`}
+        href={`/product/${item.slug || item.productId}`}
         className="h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-muted"
       >
         <img src={optimizedUrl} alt={item.name} className="h-full w-full object-contain p-2" />
       </Link>
       <div className="flex flex-1 flex-col">
         <Link
-          href={`/product/${item.slug}`}
+          href={`/product/${item.slug || item.productId}`}
           className="line-clamp-2 text-sm font-medium hover:text-accent"
         >
           {item.name}

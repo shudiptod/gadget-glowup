@@ -55,7 +55,7 @@ export function useCartAction({
           onSuccess: (data: any) => {
             toast.success(`Added ${quantity} item(s) to cart!`);
             if (data?.items?.length > 0) {
-              updateCartState(data.items);
+              updateCartState(data.items, data.cartId);
             }
             if (directCheckout) {
               router.push("/checkout");
