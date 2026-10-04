@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useCart } from "@/providers/cart-context";
@@ -17,10 +18,39 @@ async function getHomeSettings() {
 }
 
 const CHECKOUT_DRAFT_KEY = "checkout_draft_state";
+const PENDING_PAYMENT_KEY = "checkout_pending_payment";
+
+type PendingPaymentOrder = {
+  orderId?: string;
+  orderNumber: string;
+  phone: string;
+  status: "ready" | "initiating" | "blocked";
+  transactionId?: string;
+  message?: string;
+};
+
+type OrderCreateResponse = {
+  orderId?: string;
+  id?: string;
+  orderNumber?: string;
+  data?: {
+    orderId?: string;
+    id?: string;
+    orderNumber?: string;
+  };
+};
+
+type DgePayResponse = {
+  success: boolean;
+  paymentUrl?: string;
+  transactionId?: string;
+  orderNumber?: string;
+};
 
 export default function Page() {
   const { items, updateCartState } = useCart();
   const router = useRouter();
+  const submissionInProgress = useRef(false);
 
   const [homeSettings, setHomeSettings] = useState<SettingsResponse | null>(null);
 
@@ -36,6 +66,10 @@ export default function Page() {
   }>({});
 
   const [isLoaded, setIsLoaded] = useState(false); // Prevents hydration mismatch and overwriting
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
+  const [pendingPayment, setPendingPayment] = useState<PendingPaymentOrder | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
 
   useEffect(() => {
     if (homeSettings) return;
@@ -45,6 +79,7 @@ export default function Page() {
   // 1. Load Draft from LocalStorage on mount
   useEffect(() => {
     const draft = localStorage.getItem(CHECKOUT_DRAFT_KEY);
+    const savedPayment = localStorage.getItem(PENDING_PAYMENT_KEY);
     if (draft) {
       try {
         const parsed = JSON.parse(draft);
@@ -53,6 +88,26 @@ export default function Page() {
         if (parsed.zone === "inside" || parsed.zone === "outside") setZone(parsed.zone);
       } catch (e) {
         console.error("Failed to parse checkout draft", e);
+      }
+    }
+    if (savedPayment) {
+      try {
+        const parsed = JSON.parse(savedPayment) as PendingPaymentOrder;
+        if (parsed.orderNumber && parsed.phone) {
+          const recovered =
+            parsed.status === "initiating"
+              ? {
+                  ...parsed,
+                  status: "blocked" as const,
+                  message:
+                    "Payment initiation was interrupted. Contact support with your order number before trying again.",
+                }
+              : parsed;
+          setPendingPayment(recovered);
+          localStorage.setItem(PENDING_PAYMENT_KEY, JSON.stringify(recovered));
+        }
+      } catch (e) {
+        console.error("Failed to parse pending payment", e);
       }
     }
     setIsLoaded(true);
@@ -103,25 +158,191 @@ export default function Page() {
     setStep(2);
   };
 
-  const placeOrder = async () => {
+  const savePendingPayment = (order: PendingPaymentOrder) => {
+    setPendingPayment(order);
+    localStorage.setItem(PENDING_PAYMENT_KEY, JSON.stringify(order));
+  };
+
+  const initiatePayment = async (order: PendingPaymentOrder) => {
+    setPaymentError("");
+    const inFlightOrder = { ...order, status: "initiating" as const, message: undefined };
+    savePendingPayment(inFlightOrder);
+
     try {
-      const { orderNumber }: any = await apiClient.post("/orders/v2", {
-        address: address,
-        zone: zone,
-        paymentMethod: "cod",
+      let orderId = inFlightOrder.orderId;
+      if (!orderId) {
+        const orderResponse = await apiClient.get<{
+          id?: string;
+          orderId?: string;
+          data?: { id?: string; orderId?: string };
+        }>(`/orders/number/${encodeURIComponent(inFlightOrder.orderNumber)}`);
+        orderId =
+          orderResponse.id ??
+          orderResponse.orderId ??
+          orderResponse.data?.id ??
+          orderResponse.data?.orderId;
+      }
+      if (!orderId) throw new Error("We couldn't retrieve the order reference. Please try again.");
+
+      const response = await apiClient.post<DgePayResponse>("/payments/dgepay/initiate", {
+        orderId,
+        phone: inFlightOrder.phone,
       });
 
-      updateCartState([]);
+      if (!response.success || !response.paymentUrl) {
+        if (response.transactionId) {
+          savePendingPayment({
+            ...inFlightOrder,
+            orderId,
+            status: "blocked",
+            transactionId: response.transactionId,
+            message:
+              "We couldn't confirm the payment session. Please contact support before retrying.",
+          });
+          return;
+        }
+        throw new Error(
+          "Payment could not be started. You can retry without placing another order.",
+        );
+      }
 
-      // 3. Clear the draft once the order is successfully placed
-      localStorage.removeItem(CHECKOUT_DRAFT_KEY);
-
-      toast.success("Order placed!", { description: "We'll contact you shortly to confirm." });
-      router.push(`/checkout/success?orderNumber=${orderNumber}`);
+      savePendingPayment({
+        ...inFlightOrder,
+        orderId,
+        status: "blocked",
+        transactionId: response.transactionId,
+        message: "Payment session created. Redirecting to DgePay...",
+      });
+      window.location.assign(response.paymentUrl);
     } catch (error) {
-      toast.error("Failed to place order. Please try again.");
+      const errorPayload = (
+        error as {
+          response?: {
+            data?: { transactionId?: string; data?: { transactionId?: string } };
+          };
+        }
+      )?.response?.data;
+      const transactionId = errorPayload?.transactionId ?? errorPayload?.data?.transactionId;
+      const message = transactionId
+        ? "We couldn't confirm the payment session. Please contact support before retrying."
+        : error instanceof Error
+          ? error.message
+          : "Payment could not be started. You can retry without placing another order.";
+      savePendingPayment({
+        ...inFlightOrder,
+        status: transactionId ? "blocked" : "ready",
+        transactionId,
+        message,
+      });
+      setPaymentError(message);
     }
   };
+
+  const retryPayment = async () => {
+    if (!pendingPayment || pendingPayment.status !== "ready" || submissionInProgress.current)
+      return;
+    submissionInProgress.current = true;
+    setIsSubmitting(true);
+    try {
+      await initiatePayment(pendingPayment);
+    } finally {
+      submissionInProgress.current = false;
+      setIsSubmitting(false);
+    }
+  };
+
+  const placeOrder = async () => {
+    if (submissionInProgress.current) return;
+    submissionInProgress.current = true;
+    setIsSubmitting(true);
+    try {
+      const response = await apiClient.post<OrderCreateResponse>("/orders/v2", {
+        address: { ...address, phone: address.phone.trim() },
+        zone: zone,
+        paymentMethod: paymentMethod === "cod" ? "cod" : "online",
+      });
+
+      const orderNumber = response.orderNumber ?? response.data?.orderNumber;
+      const orderId =
+        response.orderId ?? response.id ?? response.data?.orderId ?? response.data?.id;
+      if (!orderNumber)
+        throw new Error("The order was created, but its order number was not returned.");
+      localStorage.removeItem(CHECKOUT_DRAFT_KEY);
+
+      if (paymentMethod === "online") {
+        updateCartState([]);
+        const nextPayment: PendingPaymentOrder = {
+          orderId,
+          orderNumber,
+          phone: address.phone.trim(),
+          status: "ready",
+        };
+        savePendingPayment(nextPayment);
+        await initiatePayment(nextPayment);
+      } else {
+        updateCartState([]);
+        toast.success("Order placed!", { description: "We'll contact you shortly to confirm." });
+        router.push(`/checkout/success?orderNumber=${encodeURIComponent(orderNumber)}`);
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to place order. Please try again.",
+      );
+    } finally {
+      submissionInProgress.current = false;
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!isLoaded) return null;
+
+  if (pendingPayment) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16">
+        <div className="rounded-2xl border bg-card p-6">
+          <h1 className="font-display text-2xl font-extrabold">Complete your payment</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Order{" "}
+            <span className="font-semibold text-foreground">{pendingPayment.orderNumber}</span> is
+            ready for payment.
+          </p>
+          {(paymentError || pendingPayment.message) && (
+            <p className="mt-4 rounded-lg border border-border bg-muted p-3 text-sm" role="status">
+              {paymentError || pendingPayment.message}
+              {pendingPayment.transactionId && (
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Reference: {pendingPayment.transactionId}
+                </span>
+              )}
+            </p>
+          )}
+          <div className="mt-5 flex flex-wrap gap-3">
+            {pendingPayment.status === "ready" && (
+              <button
+                onClick={retryPayment}
+                disabled={isSubmitting}
+                className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-foreground transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting ? "Connecting to DgePay..." : "Retry payment"}
+              </button>
+            )}
+            <a
+              href={`/checkout/success?orderNumber=${encodeURIComponent(pendingPayment.orderNumber)}`}
+              className="rounded-full border px-5 py-2.5 text-sm font-semibold transition hover:bg-muted"
+            >
+              View order
+            </a>
+            <a
+              href="/support"
+              className="rounded-full border px-5 py-2.5 text-sm font-semibold transition hover:bg-muted"
+            >
+              Contact support
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -131,9 +352,6 @@ export default function Page() {
       </div>
     );
   }
-
-  // Prevent rendering the form until the draft is loaded to avoid visual flickering
-  if (!isLoaded) return null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -283,18 +501,76 @@ export default function Page() {
                   );
                 })}
               </ul>
+              <fieldset className="space-y-2">
+                <legend className="text-sm font-semibold">Payment method</legend>
+                <label
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors ${paymentMethod === "cod" ? "border-accent bg-accent/5" : "hover:bg-muted/50"}`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cod"
+                    checked={paymentMethod === "cod"}
+                    onChange={() => setPaymentMethod("cod")}
+                  />
+                  <span className="text-sm font-semibold">Cash on Delivery</span>
+                </label>
+                <label
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors ${paymentMethod === "online" ? "border-[#E30D18] bg-[#E30D18]/5" : "hover:bg-muted/50"}`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="online"
+                    checked={paymentMethod === "online"}
+                    onChange={() => setPaymentMethod("online")}
+                  />
+                  <Image
+                    src="/images/brand-logos/dgepay-logo.svg"
+                    alt="DGePay"
+                    width={36}
+                    height={36}
+                    className="h-9 w-9 shrink-0 rounded-md"
+                  />
+                  <span className="flex flex-col">
+                    <span className="text-sm font-semibold">Pay online with DgePay</span>
+                    <span className="text-xs text-muted-foreground">Secure online payment</span>
+                  </span>
+                </label>
+              </fieldset>
               <div className="flex gap-2">
                 <button
                   onClick={() => setStep(1)}
+                  disabled={isSubmitting}
                   className="rounded-full border px-5 py-2.5 text-sm font-semibold hover:bg-muted"
                 >
                   Back
                 </button>
                 <button
                   onClick={placeOrder}
-                  className="flex-1 rounded-full bg-brand px-5 py-3 text-sm font-bold text-brand-foreground hover:brightness-110"
+                  disabled={isSubmitting}
+                  className={`flex-1 rounded-full px-5 py-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${paymentMethod === "online" ? "bg-[#E30D18] text-white hover:bg-[#c90b15]" : "bg-brand text-brand-foreground hover:brightness-110"}`}
                 >
-                  Place order · {formatBDT(subtotal + shippingCost)}
+                  <span className="flex items-center justify-center gap-2">
+                    {paymentMethod === "online" && (
+                      <Image
+                        src="/images/brand-logos/dgepay-logo.svg"
+                        alt=""
+                        width={28}
+                        height={28}
+                        className="h-7 w-7 shrink-0 rounded bg-white"
+                      />
+                    )}
+                    <span>
+                      {isSubmitting
+                        ? paymentMethod === "online"
+                          ? "Connecting to DgePay..."
+                          : "Placing order..."
+                        : paymentMethod === "online"
+                          ? `Pay with DgePay · ${formatBDT(subtotal + shippingCost)}`
+                          : `Place order · ${formatBDT(subtotal + shippingCost)}`}
+                    </span>
+                  </span>
                 </button>
               </div>
             </div>

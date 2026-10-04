@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CheckCircle2, Package, MapPin, Receipt, CreditCard } from "lucide-react";
 import apiClient from "@/lib/apiClient";
 import { Order } from "@/hooks/useOrder";
+import CheckoutPaymentCleanup from "@/components/checkout-payment-cleanup";
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -22,16 +23,49 @@ export default async function Page({ searchParams }: PageProps) {
 
   const orderNumberParam = resolvedSearchParams?.orderNumber;
   const orderNumber = Array.isArray(orderNumberParam) ? orderNumberParam[0] : orderNumberParam;
+  const paymentParam = resolvedSearchParams?.payment;
+  const paymentHint = Array.isArray(paymentParam) ? paymentParam[0] : paymentParam;
 
   const order = orderNumber ? await getOrderDetails(orderNumber) : null;
+  const backendPaymentStatus = order?.paymentStatus?.toLowerCase();
+  const paymentDisplayStatus = !order
+    ? "unverified"
+    : backendPaymentStatus === "paid"
+      ? "paid"
+      : backendPaymentStatus === "failed"
+        ? "failed"
+        : ["pending", "unpaid"].includes(backendPaymentStatus ?? "")
+          ? "pending"
+          : "unverified";
+  const paymentReturn = Boolean(paymentHint);
+  const pageTitle = paymentReturn
+    ? paymentDisplayStatus === "paid"
+      ? "Payment confirmed"
+      : paymentDisplayStatus === "failed"
+        ? "Payment not completed"
+        : paymentDisplayStatus === "pending"
+          ? "Payment processing"
+          : "Payment status unavailable"
+    : order
+      ? "Order received"
+      : "Order status";
+  const pageDescription = paymentReturn
+    ? paymentDisplayStatus === "paid"
+      ? "Your payment has been confirmed and your order is being processed."
+      : paymentDisplayStatus === "failed"
+        ? "The order payment was not completed. Contact support if you need help with another attempt."
+        : paymentDisplayStatus === "pending"
+          ? "Your payment is still being verified. Check back shortly or contact support with your order number."
+          : "We couldn't verify the payment status yet. Keep your order number and contact support for help."
+    : "Thank you for shopping with Gajitto. We've received your order and our team will process it shortly.";
 
   return (
     <div className="mx-auto max-w-3xl px-4 pt-4 pb-16 text-center">
-      <h1 className="mt-6 font-display text-3xl font-extrabold md:text-4xl">Order Confirmed!</h1>
+      {order && <CheckoutPaymentCleanup orderNumber={order.orderNumber} />}
+      <h1 className="mt-6 font-display text-3xl font-extrabold md:text-4xl">{pageTitle}</h1>
 
       <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
-        Thank you for shopping with Gajitto. We've received your order and our team will process it
-        shortly.
+        {pageDescription}
       </p>
 
       {order ? (
@@ -161,14 +195,27 @@ export default async function Page({ searchParams }: PageProps) {
           </div>
         </div>
       ) : orderNumber ? (
-        // Fallback UI if the API call fails or returns null, but we still have an order number
-        <div className="mx-auto mt-8 max-w-sm rounded-2xl border bg-card p-5 shadow-sm text-center">
+        <div className="mx-auto mt-8 max-w-sm rounded-2xl border bg-card p-5 text-center">
           <p className="text-sm font-medium text-muted-foreground">Your Order Number</p>
           <p className="mt-1 font-display text-2xl font-extrabold text-foreground tracking-wide">
             {orderNumber}
           </p>
+          {paymentReturn && (
+            <p className="mt-3 text-sm text-muted-foreground" role="status">
+              Payment status: {paymentDisplayStatus}. The order record could not be loaded just now.
+            </p>
+          )}
         </div>
       ) : null}
+
+      {paymentReturn && paymentDisplayStatus !== "paid" && (
+        <Link
+          href="/support"
+          className="mt-5 inline-block text-sm font-semibold text-accent underline"
+        >
+          Contact support
+        </Link>
+      )}
 
       <Link
         href="/collection"
